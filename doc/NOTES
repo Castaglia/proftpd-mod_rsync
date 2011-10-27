@@ -14,4 +14,17 @@ Will need to link with libcrypto (OpenSSL) in order to get MD4 hash algos,
 if we are doing authentication ourselves.  Whee.  (Maybe only support
 anon rsync, or auth'd rsync over ssh.  No auth'd rsync over non-ssh?)
 
-Will need to link to libpopt, in order
+Will need to link to libpopt, in order to provide feature parity with
+the rsync command-line options.
+
+  http://www.mail-archive.com/psst@net.lut.ac.uk/msg00715.html
+
+To handle rsync-over-ssh, mod_rsync would need to see if mod_sftp is
+present/loaded _at startup_.  If so, need to register an 'exec' channel
+handler/listener with mod_sftp, to handle the exec requests for executing
+rsync.
+
+The librsync library can help with some of this, I think...
+
+  rsync-<version>/csprotocol.txt is helpful
+
