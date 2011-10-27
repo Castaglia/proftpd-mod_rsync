@@ -1,0 +1,53 @@
+/*
+ * ProFTPD: mod_rsync
+ * Copyright (c) 2010 TJ Saunders
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * As a special exemption, TJ Saunders and other respective copyright holders
+ * give permission to link this program with OpenSSL, and distribute the
+ * resulting executable, without including the source code for OpenSSL in the
+ * source distribution.
+ *
+ * $Id: mod_deflate.c,v 1.3 2007/03/05 17:55:51 tj Exp tj $
+ */
+
+#ifndef MOD_RSYNC_H
+#define MOD_RSYNC_H
+
+#include "conf.h"
+#include "privs.h"
+#include "mod_sftp.h"
+
+#ifdef HAVE_SYS_UIO_H
+# include <sys/uio.h>
+#endif
+
+#include <zlib.h>
+
+#define MOD_RSYNC_VERSION	"mod_rsync/0.0"
+
+/* Define if you have the <endian.h> header file.  */
+#undef HAVE_ENDIAN_H
+
+/* Define if you have the <machine/endian.h> header file.  */
+#undef HAVE_MACHINE_ENDIAN_H
+
+/* Miscellaneous */
+extern int rsync_logfd;
+extern pool *rsync_pool;
+extern int (*rsync_write_data)(pool *, uint32_t, char *, uint32_t);
+
+#endif
