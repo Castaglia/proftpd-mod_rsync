@@ -1,0 +1,17 @@
+
+Environment variables to set:
+
+  RSYNC_MODULE_NAME
+  RSYNC_MODULE_PATH
+  RSYNC_HOST_ADDR (client IP addr)
+  RSYNC_HOST_NAME (client DNS name)
+  RSYNC_USER_NAME (empty if anonymous)
+  RSYNC_PID (unique transfer number)
+  RSYNC_REQUEST
+  RSYNC_ARG#
+
+Will need to link with libcrypto (OpenSSL) in order to get MD4 hash algos,
+if we are doing authentication ourselves.  Whee.  (Maybe only support
+anon rsync, or auth'd rsync over ssh.  No auth'd rsync over non-ssh?)
+
+Will need to link to libpopt, in order
