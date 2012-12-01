@@ -147,8 +147,7 @@ static int MD4_Init(MD4_CTX *ctx) {
   ctx->state[3] = 0x10325476;
 }
 
-static void mdfour_tail(MD4_CTX *ctx, const unsigned char *data,
-    uint32 data_len) {
+static void md4_tail(MD4_CTX *ctx, const unsigned char *data, uint32 data_len) {
   unsigned char buf[128];
   uint32_t M[16];
 

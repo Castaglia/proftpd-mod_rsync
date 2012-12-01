@@ -28,3 +28,5 @@ The librsync library can help with some of this, I think...
 
   rsync-<version>/csprotocol.txt is helpful
 
+Should mod_rsync support rsync over SSL/TLS, in addition to SSH?  (Does anyone
+even use rsync over SSL/TLS?)
