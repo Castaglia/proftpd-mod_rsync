@@ -29,4 +29,17 @@ The librsync library can help with some of this, I think...
   rsync-<version>/csprotocol.txt is helpful
 
 Should mod_rsync support rsync over SSL/TLS, in addition to SSH?  (Does anyone
-even use rsync over SSL/TLS?)
+even use rsync over SSL/TLS? Answer: Yes -- see rsync+stunnel link.)
+
+Links:
+
+  http://en.wikipedia.org/wiki/Rsync#Algorithm
+  http://samba.org/~tridge/phd_thesis.pdf
+  http://rsync.samba.org/tech_report/ 
+  http://rsync.samba.org/how-rsync-works.html
+    Useful discussion of the generator, sender, receiver roles, and of
+    why the file list is transmitted as it is.
+
+Related:
+
+  http://www.netbits.us/docs/stunnel_rsync.html 
