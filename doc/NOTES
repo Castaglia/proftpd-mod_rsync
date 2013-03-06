@@ -40,6 +40,23 @@ Links:
     Useful discussion of the generator, sender, receiver roles, and of
     why the file list is transmitted as it is.
 
+  http://tutorials.jenkov.com/rsync/index.html
+  http://tutorials.jenkov.com/rsync/network-protocol.html
+    Interesting trick about keeping around rolling checksum and hash values
+    for local files around, especially if you know your local server will
+    be the source of files (e.g. it is an active mirroring source).
+
+  http://rsync.samba.org/FAQ.html
+    See especially the FAQs about memory usage, out of memory, and the
+    newer incremental modes.
+
+    The FAQ on "recopies the same files" is of relevance to mod_rewrite
+    users, as changing the filename can lead to that sort of recopying
+    unexpectedly.
+
 Related:
 
   http://www.netbits.us/docs/stunnel_rsync.html 
+    rsync over SSL
+
+  http://opencoder.net/new-protocol.html
