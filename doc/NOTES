@@ -22,7 +22,8 @@ the rsync command-line options.
 To handle rsync-over-ssh, mod_rsync would need to see if mod_sftp is
 present/loaded _at startup_.  If so, need to register an 'exec' channel
 handler/listener with mod_sftp, to handle the exec requests for executing
-rsync.
+rsync.  This, I think, will be the most common usage, so focus on this
+(rather than on the daemon protocol).
 
 The librsync library can help with some of this, I think...
 
@@ -30,6 +31,9 @@ The librsync library can help with some of this, I think...
 
 Should mod_rsync support rsync over SSL/TLS, in addition to SSH?  (Does anyone
 even use rsync over SSL/TLS? Answer: Yes -- see rsync+stunnel link.)
+
+Maybe only start by supporting protocol version 30, and adding support for
+older versions as needed?
 
 Links:
 
@@ -53,6 +57,11 @@ Links:
     The FAQ on "recopies the same files" is of relevance to mod_rewrite
     users, as changing the filename can lead to that sort of recopying
     unexpectedly.
+
+  http://fixunix.com/tools/520822-memory-usage-rsync-3-0-3-how-much-ram-should-i-have-totransfer-13-million-files.html
+    How much memory is needed for LARGE file lists, even with incremental
+    mode.  (Also points out the need to explicitly NOT support options which
+    would prevent the use of incremental mode.)
 
 Related:
 
