@@ -1,5 +1,0 @@
-The mod_rsync module for ProFTPD is intended to support the rsync protocol,
-tunneled over an SSH connection; the mod_rsync module thus uses the mod_sftp
-module for ProFTPD.
-
-For further module documentation, see mod_rsync.html.

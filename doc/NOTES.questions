@@ -1,0 +1,16 @@
+Several rsync-related questions/features found on StackExchange:
+
+  http://serverfault.com/questions/667887/rsync-daemon-without-rsyncd-conf
+
+  http://serverfault.com/questions/746551/faster-rsync-of-huge-directory-which-was-not-changed
+
+  http://serverfault.com/questions/741346/rsync-directory-so-all-changes-appear-atomically
+
+  http://serverfault.com/questions/344731/rsync-copying-over-timestamps-only?rq=1
+
+  http://serverfault.com/questions/40927/rsync-of-4gb-files?rq=1
+
+  http://serverfault.com/questions/169466/chunking-large-rsync-transfers?rq=1 
+
+  AWESOME:
+  http://serverfault.com/questions/45083/favorite-rsync-tips-and-tricks?rq=1
