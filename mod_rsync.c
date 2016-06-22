@@ -1,7 +1,6 @@
 /*
  * ProFTPD: mod_rsync -- a module supporting the rsync protocol
- *
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +24,17 @@
  * This is mod_rsync, contrib software for proftpd 1.3.x and above.
  * For more information contact TJ Saunders <tj@castaglia.org>.
  *
- * --- DO NOT EDIT BELOW THIS LINE ---
- * $Archive: mod_rsync.a $
+ * -----DO NOT EDIT BELOW THIS LINE-----
+ * $Archive: mod_rsync.a$
  * $Libraries: -lrsync -lpopt -lz$
- * $Id: mod_deflate.c,v 1.3 2007/03/05 17:55:51 tj Exp tj $
  */
 
 #include "mod_rsync.h"
+
+#ifdef HAVE_SFTP
+# include "mod_sftp.h"
+#endif /* HAVE_SFTP */
+
 #include "msg.h"
 #include "session.h"
 #include "options.h"
@@ -102,6 +105,10 @@ static int rsync_init_channel(uint32_t channel_id) {
   return 0;
 }
 
+static int rsync_postopen_channel(uint32_t channel_id) {
+  return 0;
+}
+
 static int rsync_free_channel(uint32_t channel_id) {
   return rsync_session_close(channel_id);
 }
@@ -121,7 +128,7 @@ static int rsync_handle_data_recv(pool *p, struct rsync_session *sess,
 static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
     char *data, uint32_t datalen) {
   struct rsync_options *opts;
-  char *buf, *ptr;
+  char *buf, *ptr = NULL;
   uint32_t buflen, bufsz;
 
   opts = sess->options;
@@ -369,6 +376,7 @@ static int rsync_sess_init(void) {
   if (sftp_channel_register_exec_handler(&rsync_module, "rsync",
     rsync_set_params,
     rsync_init_channel,
+    rsync_postopen_channel,
     rsync_handle_packet,
     rsync_free_channel,
     &rsync_write_data) < 0) {
