@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync file list/manifest
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.c,v 1.4 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -30,7 +28,7 @@
 #include "disconnect.h"
 #include "entry.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.manifest";
 
 /* Returns -1 to indicate that the given path is explicitly excluded, 1 to
  * indicate that the given path is explicitly included, and 0 to indicate that
@@ -79,6 +77,7 @@ int rsync_manifest_handle(pool *p, struct rsync_session *sess, char **data,
   names = args->elts;
   for (i = 0; i < args->nelts; i++) {
     struct rsync_entry *ent;
+    int flags = 0;
 
     res = exclude_file(p, filters, names[i]);
     if (res == -1) {
@@ -86,7 +85,7 @@ int rsync_manifest_handle(pool *p, struct rsync_session *sess, char **data,
       continue;
     }
 
-    ent = rsync_entry_create(p, sess, names[i]);
+    ent = rsync_entry_create(p, sess, names[i], flags);
 
     /* XXX Handle real manifest entry */
     nentries++;
