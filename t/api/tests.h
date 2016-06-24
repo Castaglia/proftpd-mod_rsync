@@ -1,6 +1,6 @@
 /*
- * ProFTPD - mod_rsync checksums
- * Copyright (c) 2010 TJ Saunders
+ * ProFTPD - mod_rsync API testsuite
+ * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1335, USA.
  *
  * As a special exemption, TJ Saunders and other respective copyright holders
  * give permission to link this program with OpenSSL, and distribute the
@@ -22,19 +22,28 @@
  * source distribution.
  */
 
+/* Testsuite management */
+
+#ifndef MOD_RSYNC_TESTS_H
+#define MOD_RSYNC_TESTS_H
+
 #include "mod_rsync.h"
-#include "session.h"
 
-#ifndef MOD_RSYNC_CHECKSUM_H
-#define MOD_RSYNC_CHECKSUM_H
+#include "checksum.h"
 
-/* XXX Protocol version 30 and later use MD5; prior to that, MD4.
- *
- * Since MD4 is considered weak, recent versions of OpenSSL have to be 
- * compiled with MD4 support explicitly enabled; for these versions, we
- * will need to supply our own MD4.  Damn.
- */
-
-int rsync_checksum_handle(pool *, struct rsync_session *, char **, uint32_t *);
-
+#ifdef HAVE_CHECK_H
+# include <check.h>
+#else
+# error "Missing Check installation; necessary for ProFTPD testsuite"
 #endif
+
+int tests_rmpath(pool *p, const char *path);
+int tests_stubs_set_next_cmd(cmd_rec *cmd);
+
+Suite *tests_get_checksum_suite(void);
+
+unsigned int recvd_signal_flags;
+extern pid_t mpid;
+extern server_rec *main_server;
+
+#endif /* MOD_RSYNC_TESTS_H */

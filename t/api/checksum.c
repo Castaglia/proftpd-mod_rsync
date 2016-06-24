@@ -1,6 +1,6 @@
 /*
- * ProFTPD - mod_rsync checksums
- * Copyright (c) 2010 TJ Saunders
+ * ProFTPD - mod_rsync testsuite
+ * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1335, USA.
  *
  * As a special exemption, TJ Saunders and other respective copyright holders
  * give permission to link this program with OpenSSL, and distribute the
@@ -22,19 +22,40 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
+/* Checksum API tests. */
 
-#ifndef MOD_RSYNC_CHECKSUM_H
-#define MOD_RSYNC_CHECKSUM_H
+#include "tests.h"
 
-/* XXX Protocol version 30 and later use MD5; prior to that, MD4.
- *
- * Since MD4 is considered weak, recent versions of OpenSSL have to be 
- * compiled with MD4 support explicitly enabled; for these versions, we
- * will need to supply our own MD4.  Damn.
- */
+static pool *p = NULL;
 
-int rsync_checksum_handle(pool *, struct rsync_session *, char **, uint32_t *);
+static void set_up(void) {
+  if (p == NULL) {
+    p = make_sub_pool(NULL);
+  }
+}
 
-#endif
+static void tear_down(void) {
+  if (p) {
+    destroy_pool(p);
+    p = NULL;
+  } 
+}
+
+START_TEST (checksum_md5_test) {
+}
+END_TEST
+
+Suite *tests_get_checksum_suite(void) {
+  Suite *suite;
+  TCase *testcase;
+
+  suite = suite_create("checksum");
+  testcase = tcase_create("base");
+
+  tcase_add_checked_fixture(testcase, set_up, tear_down);
+
+  tcase_add_test(testcase, checksum_md5_test);
+
+  suite_add_tcase(suite, testcase);
+  return suite;
+}

@@ -1,0 +1,39 @@
+env: TRAVIS_CI=true
+language: c
+
+compiler:
+  - gcc
+  - clang
+
+install:
+  # for unit tests
+  - sudo apt-get install -y check
+  # for popt support
+  - sudo apt-get install -y libpopt-dev
+  # for OpenSSL support
+  - sudo apt-get install -y libssl-dev
+  # for static code analysis
+  - sudo apt-get install -y cppcheck rats
+  # for test code coverage
+  - sudo apt-get install -y lcov
+  - gem install coveralls-lcov
+
+script:
+  # - find . -type f -name "*.c" -print | grep -v t\/ | xargs cppcheck 2>&1
+  # - find . -type f -name "*.c" -print | grep -v t\/ | xargs rats --language=c
+  - git clone https://github.com/proftpd/proftpd.git
+  - mkdir -p proftpd/contrib/mod_rsync/
+  - cp *.[ch] proftpd/contrib/mod_rsync/
+  - cp mod_rsync.* proftpd/contrib/mod_rsync/
+  - cp Makefile.in proftpd/contrib/mod_rsync/
+  - cp config* proftpd/contrib/mod_rsync/
+  - cp install-sh proftpd/contrib/mod_rsync/
+  - cp -R t/api proftpd/contrib/mod_rsync/t/api
+  - cd proftpd
+  - ./configure --enable-devel=coverage --enable-dso --enable-tests --with-shared=mod_sftp:mod_rsync
+  - make
+  # Last, a build using static modules, and run the tests
+  - make clean
+  - ./configure --enable-devel=coverage --enable-tests --with-modules=mod_sftp:mod_rsync
+  - make
+  - cd contrib/mod_rsync && make TEST_VERBOSE=1 check && cd ../../
