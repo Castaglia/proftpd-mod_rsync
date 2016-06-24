@@ -188,4 +188,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(LIBDIRS)
 
 AC_CONFIG_HEADER(mod_rsync.h)
-AC_OUTPUT(Makefile)
+AC_OUTPUT(
+  t/Makefile
+  Makefile
+)

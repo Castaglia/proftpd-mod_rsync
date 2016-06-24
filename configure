@@ -4263,7 +4263,7 @@ LIBDIRS="$ac_build_addl_libdirs"
 
 ac_config_headers="$ac_config_headers mod_rsync.h"
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files t/Makefile Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4818,6 +4818,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "mod_rsync.h") CONFIG_HEADERS="$CONFIG_HEADERS mod_rsync.h" ;;
+    "t/Makefile") CONFIG_FILES="$CONFIG_FILES t/Makefile" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
