@@ -10,6 +10,8 @@ install:
   - sudo apt-get install -y check
   # for popt support
   - sudo apt-get install -y libpopt-dev
+  # for librsync support
+  - sudo apt-get install -y librsync-dev
   # for OpenSSL support
   - sudo apt-get install -y libssl-dev
   # for static code analysis
