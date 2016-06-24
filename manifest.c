@@ -54,10 +54,10 @@ static int exclude_file(pool *p, array_header *filters, const char *path) {
   return 0;
 }
 
-int rsync_manifest_handle(pool *p, struct rsync_session *sess, char **data,
-    uint32_t *datalen) {
+int rsync_manifest_handle(pool *p, struct rsync_session *sess,
+    unsigned char **data, uint32_t *datalen) {
   register unsigned int i;
-  char *buf, *ptr;
+  unsigned char *buf, *ptr;
   char **names;
   uint32_t buflen, bufsz;
   array_header *args, *filters;
@@ -107,7 +107,7 @@ int rsync_manifest_handle(pool *p, struct rsync_session *sess, char **data,
     /* XXX ... */
   }
 
-  if (rsync_write_data(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
+  if ((rsync_write_data)(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "error sending file manifest: %s", strerror(errno));
     return -1;

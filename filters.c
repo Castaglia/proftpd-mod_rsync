@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync filters
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.c,v 1.4 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -29,11 +27,11 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.filters";
 
-int rsync_filters_handle(pool *p, struct rsync_session *sess, char **data,
-    uint32_t *datalen) {
-  char *buf, *ptr;
+int rsync_filters_handle(pool *p, struct rsync_session *sess,
+    unsigned char **data, uint32_t *datalen) {
+  unsigned char *buf, *ptr;
   uint32_t buflen, bufsz;
   array_header *filters;
   struct rsync_options *opts;
@@ -57,7 +55,7 @@ int rsync_filters_handle(pool *p, struct rsync_session *sess, char **data,
        (opts->delete_mode && sess->protocol_version >= 29))) {
 #define RSYNC_MAX_STRLEN        4096
     int32_t filter_len;
-    char *filter_data;
+    unsigned char *filter_data;
 
     filter_len = rsync_msg_read_int(p, data, datalen);
 

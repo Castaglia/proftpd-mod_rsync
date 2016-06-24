@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_rsync message/IO formatting
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- *
- * $Id: msg.c,v 1.4 2010/03/04 23:14:33 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -89,7 +86,7 @@
 # error "Endianness of platform is unknown"
 #endif
 
-char rsync_msg_read_byte(pool *p, char **buf, uint32_t *buflen) {
+char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen) {
   char byte = 0;
 
   (void) p;
@@ -108,9 +105,9 @@ char rsync_msg_read_byte(pool *p, char **buf, uint32_t *buflen) {
   return byte;
 }
 
-char *rsync_msg_read_data(pool *p, char **buf, uint32_t *buflen,
-    size_t datalen) {
-  char *data = NULL;
+unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
+    uint32_t *buflen, size_t datalen) {
+  unsigned char *data = NULL;
 
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
@@ -127,7 +124,7 @@ char *rsync_msg_read_data(pool *p, char **buf, uint32_t *buflen,
   return data;
 }
 
-int32_t rsync_msg_read_int(pool *p, char **buf, uint32_t *buflen) {
+int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen) {
   int32_t val = 0;
 
   (void) p;
@@ -147,7 +144,7 @@ int32_t rsync_msg_read_int(pool *p, char **buf, uint32_t *buflen) {
   return val;
 }
 
-int64_t rsync_msg_read_long(pool *p, char **buf, uint32_t *buflen) {
+int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
   int64_t val = 0;
 
   (void) p;
@@ -167,7 +164,7 @@ int64_t rsync_msg_read_long(pool *p, char **buf, uint32_t *buflen) {
   return val;
 }
 
-char *rsync_msg_read_string(pool *p, char **buf, uint32_t *buflen,
+char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
     size_t datalen) {
   char *data = NULL;
 
@@ -177,21 +174,30 @@ char *rsync_msg_read_string(pool *p, char **buf, uint32_t *buflen,
   return data;
 }
 
-void rsync_msg_write_byte(char **buf, uint32_t *buflen, char byte) {
-  if (*buflen < sizeof(char)) {
+uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
+    char byte) {
+  uint32_t len;
+
+  len = sizeof(char);
+
+  if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "data error: unable to write byte to %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
   }
 
-  memcpy(*buf, &byte, sizeof(char));
-  (*buf) += sizeof(char);
-  (*buflen) -= sizeof(char);
+  memcpy(*buf, &byte, len);
+  (*buf) += len;
+  (*buflen) -= len;
+
+  return len;
 }
 
-void rsync_msg_write_data(char **buf, uint32_t *buflen, const char *data,
-    size_t datalen) {
+uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
+    unsigned const char *data, size_t datalen) {
+  uint32_t len = 0;
+
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "data error: unable to write %lu bytes of data to %lu byte buffer",
@@ -203,11 +209,20 @@ void rsync_msg_write_data(char **buf, uint32_t *buflen, const char *data,
     memcpy(*buf, data, datalen);
     (*buf) += datalen;
     (*buflen) -= datalen;
+
+    len += datalen;
   }
+
+  return len;
 }
 
-void rsync_msg_write_int(char **buf, uint32_t *buflen, int32_t val) {
-  if (*buflen < sizeof(int32_t)) {
+uint32_t rsync_msg_write_int(unsigned char **buf, uint32_t *buflen,
+    int32_t val) {
+  uint32_t len = 0;
+
+  len = sizeof(int32_t);
+
+  if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "data error: unable to write int to %lu byte buffer",
       (unsigned long) *buflen);
@@ -215,13 +230,20 @@ void rsync_msg_write_int(char **buf, uint32_t *buflen, int32_t val) {
   }
 
   val = rsync_ntole32(val);
-  memcpy(*buf, &val, sizeof(int32_t));
-  (*buf) += sizeof(int32_t);
-  (*buflen) -= sizeof(int32_t);
+  memcpy(*buf, &val, len);
+  (*buf) += len;
+  (*buflen) -= len;
+
+  return len;
 }
 
-void rsync_msg_write_long(char **buf, uint32_t *buflen, int64_t val) {
-  if (*buflen < sizeof(int64_t)) {
+uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
+    int64_t val) {
+  uint32_t len = 0;
+
+  len = sizeof(int64_t);
+
+  if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "data error: unable to write long to %lu byte buffer",
       (unsigned long) *buflen);
@@ -229,14 +251,17 @@ void rsync_msg_write_long(char **buf, uint32_t *buflen, int64_t val) {
   }
 
   val = rsync_ntole64(val);
-  memcpy(*buf, &val, sizeof(int64_t));
-  (*buf) += sizeof(int64_t);
-  (*buflen) -= sizeof(int64_t);
+  memcpy(*buf, &val, len);
+  (*buf) += len;
+  (*buflen) -= len;
+
+  return len;
 }
 
-void rsync_msg_write_string(char **buf, uint32_t *buflen, const char *str) {
+uint32_t rsync_msg_write_string(unsigned char **buf, uint32_t *buflen,
+    const char *str) {
   size_t len;
 
   len = strlen(str);
-  rsync_msg_write_data(buf, buflen, str, len);
+  return rsync_msg_write_data(buf, buflen, str, len);
 }

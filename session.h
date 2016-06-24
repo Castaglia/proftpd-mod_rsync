@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync session data
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: msg.h,v 1.2 2009/02/13 23:41:19 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -62,8 +60,8 @@ struct rsync_session {
 
 #define RSYNC_SESS_FL_RECVD_DATA	0x010
 
-struct rsync_session *rsync_session_get(uint32_t);
-int rsync_session_open(uint32_t);
-int rsync_session_close(uint32_t);
+struct rsync_session *rsync_session_get(uint32_t channel_id);
+int rsync_session_open(uint32_t channel_id);
+int rsync_session_close(uint32_t channel_id);
 
 #endif /* MOD_RSYNC_SESSION_H */

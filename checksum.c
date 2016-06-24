@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync checksums
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.c,v 1.4 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -30,7 +28,7 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.checksum";
 
 #ifdef OPENSSL_NO_MD4
 typedef struct {
@@ -237,7 +235,7 @@ pr_trace_msg(trace_channel, 9, "checksum_handle: opts = %p", opts);
    * get the seed value.
    */
   if (opts->sender) {
-    char *buf, *ptr;
+    unsigned char *buf, *ptr;
     uint32_t buflen, bufsz;
 
     if (opts->checksum_seed == 0) {
@@ -251,7 +249,7 @@ pr_trace_msg(trace_channel, 17, "generated checksum seed %lu", (unsigned long) o
 
     rsync_msg_write_int(&buf, &buflen, (int32_t) opts->checksum_seed);
 
-    if (rsync_write_data(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
+    if ((rsync_write_data)(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
       (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
         "error sending checksum seed: %s", strerror(errno));
       return -1;
@@ -268,6 +266,9 @@ pr_trace_msg(trace_channel, 17, "generated checksum seed %lu", (unsigned long) o
 
   if (sess->protocol_version < 30) {
     /* Prior to protocol version 30, use MD4. */
+    /* NOTE: Consider simply omitting support for older protocol versions, at
+     * least for initial implementation.
+     */
 
   } else {
     /* Protocol version 30 and later, user MD5. */

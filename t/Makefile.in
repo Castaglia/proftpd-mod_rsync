@@ -52,7 +52,7 @@ TEST_API_DEPS=\
 TEST_API_LIBS=-lcheck
 
 TEST_API_OBJS=\
-  api/checkum.o \
+  api/checksum.o \
   api/stubs.o \
   api/tests.o
 

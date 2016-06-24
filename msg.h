@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync message/IO formatting
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: msg.h,v 1.2 2009/02/13 23:41:19 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -29,16 +27,22 @@
 #ifndef MOD_RSYNC_MSG_H
 #define MOD_RSYNC_MSG_H
 
-char rsync_msg_read_byte(pool *, char **, uint32_t *);
-char *rsync_msg_read_data(pool *, char **, uint32_t *, size_t);
-int32_t rsync_msg_read_int(pool *, char **, uint32_t *);
-int64_t rsync_msg_read_long(pool *, char **, uint32_t *);
-char *rsync_msg_read_string(pool *, char **, uint32_t *, size_t);
+char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen);
+unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
+  uint32_t *buflen, size_t datalen);
+int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen);
+int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen);
+char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
+  size_t datalen);
 
-void rsync_msg_write_byte(char **, uint32_t *, char);
-void rsync_msg_write_data(char **, uint32_t *, const char *, size_t);
-void rsync_msg_write_int(char **, uint32_t *, int32_t);
-void rsync_msg_write_long(char **, uint32_t *, int64_t);
-void rsync_msg_write_string(char **, uint32_t *, const char *);
+uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen, char val);
+uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
+  const unsigned char *data, size_t datalen);
+uint32_t rsync_msg_write_int(unsigned char **buf, uint32_t *buflen,
+  int32_t val);
+uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
+  int64_t val);
+uint32_t rsync_msg_write_string(unsigned char **buf, uint32_t *buflen,
+  const char *str);
 
 #endif /* MOD_RSYNC_MSG_H */

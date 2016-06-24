@@ -266,10 +266,22 @@ int pr_scoreboard_entry_update(pid_t pid, ...) {
 void pr_session_disconnect(module *m, int reason_code, const char *details) {
 }
 
+void pr_session_end(int flags) {
+}
+
+int pr_session_set_protocol(const char *proto) {
+  return 0;
+}
+
 void pr_signals_handle(void) {
 }
 
 /* Module-specific stubs */
+
+int rsync_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
+    uint32_t bufsz) {
+  return 0;
+}
 
 module rsync_module = {
   /* Always NULL */

@@ -56,7 +56,7 @@ pool *rsync_pool = NULL;
  * exposed in the public mod_sftp.h header file, hence this function pointer
  * passing fun.
  */
-int (*rsync_write_data)(pool *, uint32_t, char *, uint32_t);
+int (*rsync_write_data)(pool *, uint32_t, unsigned char *, uint32_t);
 
 static int rsync_engine = FALSE;
 
@@ -126,9 +126,9 @@ static int rsync_handle_data_recv(pool *p, struct rsync_session *sess,
 }
 
 static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
-    char *data, uint32_t datalen) {
+    unsigned char *data, uint32_t datalen) {
   struct rsync_options *opts;
-  char *buf, *ptr = NULL;
+  unsigned char *buf, *ptr = NULL;
   uint32_t buflen, bufsz;
 
   opts = sess->options;
@@ -142,7 +142,8 @@ static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
   /* A byte is used to indicate end-of-list. */
   rsync_msg_write_byte(&buf, &buflen, 0);
 
-  if (rsync_write_data(sess->pool, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
+  if ((rsync_write_data)(sess->pool, sess->channel_id, ptr,
+      (bufsz - buflen)) < 0) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "error sending file list EOL marker: %s", strerror(errno));
     return -1;

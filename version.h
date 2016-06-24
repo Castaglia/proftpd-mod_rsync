@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_rsync protocol versions
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.h,v 1.6 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -48,6 +46,7 @@
 /* Protocol version compatibility flags */
 #define RSYNC_VERSION_COMPAT_FL_INCR_RECURSE		(1 << 0)
 
-int rsync_version_handle(pool *, struct rsync_session *, char **, uint32_t *);
+int rsync_version_handle(pool *p, struct rsync_session *sess,
+  unsigned char **data, uint32_t *datalen);
 
-#endif
+#endif /* MOD_RSYNC_VERSION_H */
