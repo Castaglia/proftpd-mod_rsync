@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync options
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.c,v 1.4 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -34,7 +32,7 @@
 
 #include <popt.h>
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.options";
 
 /* We use the popt option parsing library, rather than getopt(3), because
  * getopt(3) can't handle the variety of options that rsync uses.
@@ -493,7 +491,8 @@ int rsync_options_handle(pool *p, array_header *req,
     struct rsync_session *sess) {
   register unsigned int i;
   poptContext pc;
-  int argc = 0, opt;
+  unsigned int argc = 0;
+  int opt;
   const char **argv;
 
   memset(&default_options, 0, sizeof(default_options));

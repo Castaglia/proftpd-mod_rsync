@@ -24,9 +24,7 @@
 
 #include "mod_rsync.h"
 #include "session.h"
-#include "options.h"
-#include "msg.h"
-#include "disconnect.h"
+#include "entry.h"
 
 static const char *trace_channel = "rsync.entry";
 

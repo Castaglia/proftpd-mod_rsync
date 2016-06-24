@@ -159,7 +159,7 @@ static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
 }
 
 static int rsync_handle_packet(pool *p, void *ssh2, uint32_t channel_id,
-    char *data, uint32_t datalen) {
+    unsigned char *data, uint32_t datalen) {
   struct rsync_session *sess;
   struct rsync_options *opts;
 
