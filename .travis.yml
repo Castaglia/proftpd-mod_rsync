@@ -30,6 +30,7 @@ script:
   - cp Makefile.in proftpd/contrib/mod_rsync/
   - cp config* proftpd/contrib/mod_rsync/
   - cp install-sh proftpd/contrib/mod_rsync/
+  - cp t/Makefile.in proftpd/contrib/mod_rsync/t/
   - cp -R t/api proftpd/contrib/mod_rsync/t/api
   - cd proftpd
   - ./configure --enable-devel=coverage --enable-dso --enable-tests --with-shared=mod_sftp:mod_rsync
