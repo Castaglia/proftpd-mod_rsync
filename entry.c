@@ -31,7 +31,7 @@
 static const char *trace_channel = "rsync.entry";
 
 struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-    const char *path, int flags);
+    const char *path, int flags) {
   int res;
   struct rsync_entry *ent;
   struct stat st;
