@@ -54,6 +54,9 @@ int main(int argc, char *argv[]) {
   SRunner *runner = NULL;
   char *requested = NULL;
 
+  /* Necessary function pointer magic. */
+  rsync_write_data = tests_write_data;
+
   runner = srunner_create(NULL);
 
   /* XXX This log name should be set outside this code, e.g. via environment

@@ -38,6 +38,8 @@
 #endif
 
 int tests_rmpath(pool *p, const char *path);
+int tests_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
+  uint32_t buflen);
 int tests_stubs_set_next_cmd(cmd_rec *cmd);
 
 Suite *tests_get_checksum_suite(void);

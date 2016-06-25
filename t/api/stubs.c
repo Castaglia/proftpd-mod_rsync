@@ -40,6 +40,7 @@ int rsync_logfd = -1;
 module rsync_module;
 pool *rsync_pool = NULL;
 unsigned long rsync_opts = 0UL;
+int (*rsync_write_data)(pool *, uint32_t, char *, uint32_t);
 
 static cmd_rec *next_cmd = NULL;
 
@@ -278,7 +279,7 @@ void pr_signals_handle(void) {
 
 /* Module-specific stubs */
 
-int rsync_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
+int tests_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
     uint32_t bufsz) {
   return 0;
 }

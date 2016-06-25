@@ -48,6 +48,7 @@ module rsync_module;
 
 int rsync_logfd = -1;
 pool *rsync_pool = NULL;
+unsigned long rsync_opts = 0UL;
 
 /* This looks weird, I know.  Its purpose is to be a placeholder pointer;
  * when we call sftp_channel_register_exec_handler(), we give that function
@@ -247,31 +248,38 @@ pr_trace_msg(trace_channel, 17, "handling filters");
 /* Configuration handlers
  */
 
-/* usage: RsyncEngine on|off */
+/* usage: RSyncEngine on|off */
 MODRET set_rsyncengine(cmd_rec *cmd) {
-  int bool;
+  int engine;
   config_rec *c;
 
   CHECK_ARGS(cmd, 1);
   CHECK_CONF(cmd, CONF_ROOT|CONF_VIRTUAL|CONF_GLOBAL);
 
-  bool = get_boolean(cmd, 1);
-  if (bool == -1)
+  engine = get_boolean(cmd, 1);
+  if (engine == -1) {
     CONF_ERROR(cmd, "expected Boolean parameter");
+  }
 
   c = add_config_param(cmd->argv[0], 1, NULL);
   c->argv[0] = pcalloc(c->pool, sizeof(int));
-  *((int *) c->argv[0]) = bool;
+  *((int *) c->argv[0]) = engine;
 
   return PR_HANDLED(cmd);
 }
 
-/* usage: RsyncLog path|"none" */
+/* usage: RSyncLog path|"none" */
 MODRET set_rsynclog(cmd_rec *cmd) {
   CHECK_ARGS(cmd, 1);
   CHECK_CONF(cmd, CONF_ROOT|CONF_VIRTUAL|CONF_GLOBAL);
 
   add_config_param_str(cmd->argv[0], 1, cmd->argv[1]);
+  return PR_HANDLED(cmd);
+}
+
+/* usage: RSyncOptions opt1 ... */
+MODRET set_rsyncoptions(cmd_rec *cmd) {
+  /* XXX TODO */
   return PR_HANDLED(cmd);
 }
 
@@ -394,8 +402,9 @@ static int rsync_sess_init(void) {
  */
 
 static conftable rsync_conftab[] = {
-  { "RsyncEngine",		set_rsyncengine,		NULL },
-  { "RsyncLog",			set_rsynclog,			NULL },
+  { "RSyncEngine",		set_rsyncengine,		NULL },
+  { "RSyncLog",			set_rsynclog,			NULL },
+  { "RSyncOptions",		set_rsyncoptions,		NULL },
   { NULL }
 };
 
