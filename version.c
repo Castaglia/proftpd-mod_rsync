@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync protocol versions
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- * $Id: disconnect.c,v 1.4 2009/08/28 16:14:23 castaglia Exp $
  */
 
 #include "mod_rsync.h"
@@ -30,12 +28,12 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.version";
 
-int rsync_version_handle(pool *p, struct rsync_session *sess, char **data,
-    uint32_t *datalen) {
+int rsync_version_handle(pool *p, struct rsync_session *sess,
+    unsigned char **data, uint32_t *datalen) {
   int32_t client_version;
-  char *buf, *ptr;
+  unsigned char *buf, *ptr;
   uint32_t buflen, bufsz;
   struct rsync_options *opts;
 
@@ -50,7 +48,7 @@ int rsync_version_handle(pool *p, struct rsync_session *sess, char **data,
 
   rsync_msg_write_int(&buf, &buflen, RSYNC_PROTOCOL_VERSION);
 
-  if (rsync_write_data(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
+  if ((rsync_write_data)(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "error sending server protocol version: %s", strerror(errno));
     return -1;
@@ -113,7 +111,7 @@ int rsync_version_handle(pool *p, struct rsync_session *sess, char **data,
 
   if (sess->protocol_version >= 30) {
     int32_t compat_flags = 0;
-    char *buf, *ptr;
+    unsigned char *buf, *ptr;
     uint32_t buflen, bufsz;
 
     if (opts->allow_incr_recurse) {
@@ -128,7 +126,7 @@ int rsync_version_handle(pool *p, struct rsync_session *sess, char **data,
     pr_trace_msg(trace_channel, 9, "sending compatibility flags %lu",
       (unsigned long) compat_flags);
 
-    if (rsync_write_data(sess->pool, sess->channel_id, ptr,
+    if ((rsync_write_data)(sess->pool, sess->channel_id, ptr,
         (bufsz - buflen)) < 0) {
       (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
         "error sending compatibility flags: %s", strerror(errno));

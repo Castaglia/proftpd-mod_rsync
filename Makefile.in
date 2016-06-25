@@ -11,10 +11,27 @@ SHARED_LDFLAGS=-avoid-version -export-dynamic -module
 VPATH=@srcdir@
 
 MODULE_NAME=mod_rsync
-MODULE_OBJS=mod_rsync.o session.o msg.o disconnect.o options.o version.o \
-  checksum.o filters.o manifest.o entry.o
-SHARED_MODULE_OBJS=mod_rsync.lo session.lo msg.lo disconnect.lo options.lo \
-  version.lo checksum.lo filters.lo manifest.lo entry.lo
+MODULE_OBJS=mod_rsync.o \
+  session.o \
+  msg.o \
+  disconnect.o \
+  options.o \
+  version.o \
+  checksum.o \
+  filters.o \
+  manifest.o \
+  entry.o
+
+SHARED_MODULE_OBJS=mod_rsync.lo \
+  session.lo \
+  msg.lo \
+  disconnect.lo \
+  options.lo \
+  version.lo \
+  checksum.lo \
+  filters.lo \
+  manifest.lo \
+  entry.lo
 
 # Necessary redefinitions
 INCLUDES=-I. -I../.. -I../../include @INCLUDES@
@@ -31,7 +48,7 @@ shared: $(SHARED_MODULE_OBJS)
 	$(LIBTOOL) --mode=link --tag=CC $(CC) -o $(MODULE_NAME).la $(SHARED_MODULE_OBJS) -rpath $(LIBEXECDIR) $(LDFLAGS) $(SHARED_LDFLAGS) $(SHARED_MODULE_LIBS) `cat $(MODULE_NAME).c | grep '$$Libraries:' | sed -e 's/^.*\$$Libraries: \(.*\)\\$$/\1/'`
 
 static: $(MODULE_OBJS)
-	$(AR) rc $(MODULE_NAME).a $(MODULE_NAME).o $(MODULE_OBJS)
+	$(AR) rc $(MODULE_NAME).a $(MODULE_OBJS)
 	$(RANLIB) $(MODULE_NAME).a
 
 install:
@@ -40,10 +57,12 @@ install:
 	fi
 
 clean:
-	$(RM) $(MODULE_NAME).a *.o *.la *.lo
-	$(LIBTOOL) --mode=clean $(RM) "$(MODULE_NAME).o"
-	$(LIBTOOL) --mode=clean $(RM) `echo "$(MODULE_NAME).la" | sed 's/\.la$\/.lo/g'`
+	$(LIBTOOL) --mode=clean $(RM) $(MODULE_NAME).a $(MODULE_NAME).la *.o *.lo .libs/*.o
 
 dist: clean
-	$(RM) Makefile $(MODULE_NAME).h config.status config.cache config.log
-	-$(RM) -r .libs/ CVS/ RCS/
+	$(RM) Makefile $(MODULE_NAME).h config.status config.cache config.log *.gcda *.gcno
+	-$(RM) -r .libs/ .git/ CVS/ RCS/
+
+# Run the API unit tests
+check:
+	test -z "$(ENABLE_TESTS)" || (cd t/ && $(MAKE) api-tests)

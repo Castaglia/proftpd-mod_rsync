@@ -1,6 +1,6 @@
 /*
- * ProFTPD - mod_rsync message/IO formatting
- * Copyright (c) 2010 TJ Saunders
+ * ProFTPD - mod_rsync session handling
+ * Copyright (c) 2010-2016 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,6 @@
  * give permission to link this program with OpenSSL, and distribute the
  * resulting executable, without including the source code for OpenSSL in the
  * source distribution.
- *
- *
- * $Id: msg.c,v 1.4 2010/03/04 23:14:33 castaglia Exp $
  */
 
 #include "mod_rsync.h"

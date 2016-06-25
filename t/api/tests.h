@@ -1,6 +1,6 @@
 /*
- * ProFTPD - mod_rsync file manifest entries
- * Copyright (c) 2010-2016 TJ Saunders
+ * ProFTPD - mod_rsync API testsuite
+ * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1335, USA.
  *
  * As a special exemption, TJ Saunders and other respective copyright holders
  * give permission to link this program with OpenSSL, and distribute the
@@ -22,33 +22,30 @@
  * source distribution.
  */
 
+/* Testsuite management */
+
+#ifndef MOD_RSYNC_TESTS_H
+#define MOD_RSYNC_TESTS_H
+
 #include "mod_rsync.h"
-#include "session.h"
 
-#ifndef MOD_RSYNC_ENTRY_H
-#define MOD_RSYNC_ENTRY_H
+#include "checksum.h"
 
-struct rsync_entry {
-  const char *dirname;
-  const char *filename;
-  time_t mtime;
-
-  /* Lowest 32 bits of the file length. */
-  uint32_t file_len;
-
-  /* File type and permissions (i.e. st.st_mode). */
-  uint16_t mode;
-
-  /* Flags indicating which bits of data to serialize out to the client. */
-  uint16_t xflags;
-
-  /* XXX For holding "extra" data */
-};
-
-#define RSYNC_ENTRY_FL_TOP_DIR		0x0001
-#define RSYNC_ENTRY_FL_CONTENT_DIR	0x0002
-
-struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-  const char *path, int flags);
-
+#ifdef HAVE_CHECK_H
+# include <check.h>
+#else
+# error "Missing Check installation; necessary for ProFTPD testsuite"
 #endif
+
+int tests_rmpath(pool *p, const char *path);
+int tests_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
+  uint32_t buflen);
+int tests_stubs_set_next_cmd(cmd_rec *cmd);
+
+Suite *tests_get_checksum_suite(void);
+
+unsigned int recvd_signal_flags;
+extern pid_t mpid;
+extern server_rec *main_server;
+
+#endif /* MOD_RSYNC_TESTS_H */

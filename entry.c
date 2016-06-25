@@ -1,6 +1,6 @@
 /* 
  * ProFTPD - mod_rsync file manifest entries
- * Copyright (c) 2010 TJ Saunders
+ * Copyright (c) 2010-2016 TJ Saunders
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,12 @@
 
 #include "mod_rsync.h"
 #include "session.h"
-#include "options.h"
-#include "msg.h"
-#include "disconnect.h"
+#include "entry.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.entry";
 
 struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-    const char *path, int flags);
+    const char *path, int flags) {
   int res;
   struct rsync_entry *ent;
   struct stat st;

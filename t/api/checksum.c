@@ -1,6 +1,6 @@
 /*
- * ProFTPD - mod_rsync file manifest entries
- * Copyright (c) 2010-2016 TJ Saunders
+ * ProFTPD - mod_rsync testsuite
+ * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1335, USA.
  *
  * As a special exemption, TJ Saunders and other respective copyright holders
  * give permission to link this program with OpenSSL, and distribute the
@@ -22,33 +22,40 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
+/* Checksum API tests. */
 
-#ifndef MOD_RSYNC_ENTRY_H
-#define MOD_RSYNC_ENTRY_H
+#include "tests.h"
 
-struct rsync_entry {
-  const char *dirname;
-  const char *filename;
-  time_t mtime;
+static pool *p = NULL;
 
-  /* Lowest 32 bits of the file length. */
-  uint32_t file_len;
+static void set_up(void) {
+  if (p == NULL) {
+    p = make_sub_pool(NULL);
+  }
+}
 
-  /* File type and permissions (i.e. st.st_mode). */
-  uint16_t mode;
+static void tear_down(void) {
+  if (p) {
+    destroy_pool(p);
+    p = NULL;
+  } 
+}
 
-  /* Flags indicating which bits of data to serialize out to the client. */
-  uint16_t xflags;
+START_TEST (checksum_md5_test) {
+}
+END_TEST
 
-  /* XXX For holding "extra" data */
-};
+Suite *tests_get_checksum_suite(void) {
+  Suite *suite;
+  TCase *testcase;
 
-#define RSYNC_ENTRY_FL_TOP_DIR		0x0001
-#define RSYNC_ENTRY_FL_CONTENT_DIR	0x0002
+  suite = suite_create("checksum");
+  testcase = tcase_create("base");
 
-struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-  const char *path, int flags);
+  tcase_add_checked_fixture(testcase, set_up, tear_down);
 
-#endif
+  tcase_add_test(testcase, checksum_md5_test);
+
+  suite_add_tcase(suite, testcase);
+  return suite;
+}

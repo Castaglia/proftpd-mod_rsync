@@ -48,6 +48,7 @@ module rsync_module;
 
 int rsync_logfd = -1;
 pool *rsync_pool = NULL;
+unsigned long rsync_opts = 0UL;
 
 /* This looks weird, I know.  Its purpose is to be a placeholder pointer;
  * when we call sftp_channel_register_exec_handler(), we give that function
@@ -56,7 +57,7 @@ pool *rsync_pool = NULL;
  * exposed in the public mod_sftp.h header file, hence this function pointer
  * passing fun.
  */
-int (*rsync_write_data)(pool *, uint32_t, char *, uint32_t);
+int (*rsync_write_data)(pool *, uint32_t, unsigned char *, uint32_t);
 
 static int rsync_engine = FALSE;
 
@@ -126,9 +127,9 @@ static int rsync_handle_data_recv(pool *p, struct rsync_session *sess,
 }
 
 static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
-    char *data, uint32_t datalen) {
+    unsigned char *data, uint32_t datalen) {
   struct rsync_options *opts;
-  char *buf, *ptr = NULL;
+  unsigned char *buf, *ptr = NULL;
   uint32_t buflen, bufsz;
 
   opts = sess->options;
@@ -142,7 +143,8 @@ static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
   /* A byte is used to indicate end-of-list. */
   rsync_msg_write_byte(&buf, &buflen, 0);
 
-  if (rsync_write_data(sess->pool, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
+  if ((rsync_write_data)(sess->pool, sess->channel_id, ptr,
+      (bufsz - buflen)) < 0) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "error sending file list EOL marker: %s", strerror(errno));
     return -1;
@@ -159,7 +161,7 @@ static int rsync_handle_data_send(pool *p, struct rsync_session *sess,
 }
 
 static int rsync_handle_packet(pool *p, void *ssh2, uint32_t channel_id,
-    char *data, uint32_t datalen) {
+    unsigned char *data, uint32_t datalen) {
   struct rsync_session *sess;
   struct rsync_options *opts;
 
@@ -246,31 +248,38 @@ pr_trace_msg(trace_channel, 17, "handling filters");
 /* Configuration handlers
  */
 
-/* usage: RsyncEngine on|off */
+/* usage: RSyncEngine on|off */
 MODRET set_rsyncengine(cmd_rec *cmd) {
-  int bool;
+  int engine;
   config_rec *c;
 
   CHECK_ARGS(cmd, 1);
   CHECK_CONF(cmd, CONF_ROOT|CONF_VIRTUAL|CONF_GLOBAL);
 
-  bool = get_boolean(cmd, 1);
-  if (bool == -1)
+  engine = get_boolean(cmd, 1);
+  if (engine == -1) {
     CONF_ERROR(cmd, "expected Boolean parameter");
+  }
 
   c = add_config_param(cmd->argv[0], 1, NULL);
   c->argv[0] = pcalloc(c->pool, sizeof(int));
-  *((int *) c->argv[0]) = bool;
+  *((int *) c->argv[0]) = engine;
 
   return PR_HANDLED(cmd);
 }
 
-/* usage: RsyncLog path|"none" */
+/* usage: RSyncLog path|"none" */
 MODRET set_rsynclog(cmd_rec *cmd) {
   CHECK_ARGS(cmd, 1);
   CHECK_CONF(cmd, CONF_ROOT|CONF_VIRTUAL|CONF_GLOBAL);
 
   add_config_param_str(cmd->argv[0], 1, cmd->argv[1]);
+  return PR_HANDLED(cmd);
+}
+
+/* usage: RSyncOptions opt1 ... */
+MODRET set_rsyncoptions(cmd_rec *cmd) {
+  /* XXX TODO */
   return PR_HANDLED(cmd);
 }
 
@@ -393,8 +402,9 @@ static int rsync_sess_init(void) {
  */
 
 static conftable rsync_conftab[] = {
-  { "RsyncEngine",		set_rsyncengine,		NULL },
-  { "RsyncLog",			set_rsynclog,			NULL },
+  { "RSyncEngine",		set_rsyncengine,		NULL },
+  { "RSyncLog",			set_rsynclog,			NULL },
+  { "RSyncOptions",		set_rsyncoptions,		NULL },
   { NULL }
 };
 

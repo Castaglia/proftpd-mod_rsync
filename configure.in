@@ -28,6 +28,7 @@ AC_PROG_CPP
 AC_AIX
 AC_ISC_POSIX
 AC_MINIX
+AC_PROG_MAKE_SET
 
 AC_HEADER_STDC
 AC_CHECK_HEADERS(stdlib.h unistd.h limits.h fcntl.h endian.h machine/endian.h)
@@ -188,4 +189,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(LIBDIRS)
 
 AC_CONFIG_HEADER(mod_rsync.h)
-AC_OUTPUT(Makefile)
+AC_OUTPUT(
+  t/Makefile
+  Makefile
+)
