@@ -27,9 +27,9 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync.filters";
+static const char *trace_channel = "rsync";
 
-int rsync_filters_handle(pool *p, struct rsync_session *sess,
+int rsync_filters_handle_data(pool *p, struct rsync_session *sess,
     unsigned char **data, uint32_t *datalen) {
   unsigned char *buf, *ptr;
   uint32_t buflen, bufsz;
@@ -50,9 +50,9 @@ int rsync_filters_handle(pool *p, struct rsync_session *sess,
    *    client requested --delete AND the protocol version is >= 29
    */
 
-  if (opts->sender ||
-      (opts->prune_empty_dirs ||
-       (opts->delete_mode && sess->protocol_version >= 29))) {
+  if (opts->sender == TRUE ||
+      (opts->prune_empty_dirs == TRUE ||
+       (opts->delete_mode == TRUE && sess->protocol_version >= 29))) {
 #define RSYNC_MAX_STRLEN        4096
     int32_t filter_len;
     unsigned char *filter_data;
@@ -73,7 +73,7 @@ int rsync_filters_handle(pool *p, struct rsync_session *sess,
       filter_len = rsync_msg_read_int(p, data, datalen);
     }
 
-    pr_trace_msg(trace_channel, 9, "no more filters to process");
+    pr_trace_msg(trace_channel, 9, "processed filters (%u)", filters->nelts);
   }
 
   return 0;

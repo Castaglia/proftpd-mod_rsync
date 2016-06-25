@@ -28,7 +28,7 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync.checksum";
+static const char *trace_channel = "rsync";
 
 #ifdef OPENSSL_NO_MD4
 typedef struct {
@@ -224,8 +224,8 @@ static unsigned char *MD4(const unsigned char *data, size_t data_len,
 
 #endif /* OPENSSL_NO_MD4 */
 
-int rsync_checksum_handle(pool *p, struct rsync_session *sess, char **data,
-    uint32_t *datalen) {
+int rsync_checksum_handle_data(pool *p, struct rsync_session *sess,
+    unsigned char **data, uint32_t *datalen) {
   struct rsync_options *opts;
 
   opts = sess->options;

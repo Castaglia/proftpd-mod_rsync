@@ -28,9 +28,9 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync.version";
+static const char *trace_channel = "rsync";
 
-int rsync_version_handle(pool *p, struct rsync_session *sess,
+int rsync_version_handle_data(pool *p, struct rsync_session *sess,
     unsigned char **data, uint32_t *datalen) {
   int32_t client_version;
   unsigned char *buf, *ptr;
@@ -76,11 +76,11 @@ int rsync_version_handle(pool *p, struct rsync_session *sess,
 
   if (sess->protocol_version < 29) {
     if (opts->fuzzy_basis) {
-      RSYNC_DISCONNECT("--fuzzy option supported by protocol version");
+      RSYNC_DISCONNECT("--fuzzy option not supported by protocol version");
     }
 
     if (opts->prune_empty_dirs) {
-      RSYNC_DISCONNECT("--prune-empty-dirs option supported by protocol version");
+      RSYNC_DISCONNECT("--prune-empty-dirs option not supported by protocol version");
     }
   }
 
@@ -90,11 +90,11 @@ int rsync_version_handle(pool *p, struct rsync_session *sess,
     }
 
     if (opts->preserve_acls) {
-      RSYNC_DISCONNECT("--acls option supported by protocol version");
+      RSYNC_DISCONNECT("--acls option not supported by protocol version");
     }
 
     if (opts->preserve_xattrs) {
-      RSYNC_DISCONNECT("--xattrs option supported by protocol version");
+      RSYNC_DISCONNECT("--xattrs option not supported by protocol version");
     }
   }
 
@@ -111,14 +111,13 @@ int rsync_version_handle(pool *p, struct rsync_session *sess,
 
   if (sess->protocol_version >= 30) {
     int32_t compat_flags = 0;
-    unsigned char *buf, *ptr;
     uint32_t buflen, bufsz;
 
     if (opts->allow_incr_recurse) {
       compat_flags |= RSYNC_VERSION_COMPAT_FL_INCR_RECURSE;
     }
 
-    bufsz = buflen = sizeof(int32_t);
+    bufsz = buflen = 256;
     ptr = buf = palloc(sess->pool, bufsz);
 
     rsync_msg_write_int(&buf, &buflen, compat_flags);

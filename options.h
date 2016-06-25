@@ -105,7 +105,8 @@ struct rsync_options {
   char *iconv_opt;
 };
 
-int rsync_options_handle(pool *, array_header *, struct rsync_session *);
+int rsync_options_handle_data(pool *p, array_header *req,
+  struct rsync_session *sess);
 int rsync_options_init(void);
 
 #endif

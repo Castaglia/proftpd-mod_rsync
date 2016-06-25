@@ -25,8 +25,12 @@
 #include "mod_rsync.h"
 #include "session.h"
 #include "entry.h"
+#include "msg.h"
 
-static const char *trace_channel = "rsync.entry";
+/* Entries with names longer than this have a different wire format/flags. */
+#define RSYNC_LONG_NAME_LEN		255
+
+static const char *trace_channel = "rsync";
 
 struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
     const char *path, int flags) {
@@ -34,6 +38,7 @@ struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
   struct rsync_entry *ent;
   struct stat st;
   char *best_path;
+  size_t best_pathlen;
  
   best_path = dir_best_path(p, path);
   if (best_path == NULL) {
@@ -45,7 +50,8 @@ struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
     errno = xerrno;
     return NULL;
   }
- 
+
+  pr_fs_clear_cache2(best_path);
   res = pr_fsio_lstat(best_path, &st);
   if (res < 0) {
     int xerrno = errno;
@@ -60,25 +66,55 @@ struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
   ent = pcalloc(p, sizeof(struct rsync_entry));
   ent->mtime = st.st_mtime;
   ent->mode = st.st_mode;
-  ent->file_len = (uint32_t) st.st_size;
+  ent->filesz = (uint32_t) st.st_size;
+  ent->uid = st.st_uid;
+  ent->gid = st.st_gid;
+  ent->rdev = st.st_rdev;
+
+  best_pathlen = strlen(best_path);
+  if (best_pathlen > RSYNC_LONG_NAME_LEN) {
+    flags |= RSYNC_ENTRY_CODEC_FL_LONG_NAME;
+  }
+
+  ent->path = best_path;
+  ent->pathsz = best_pathlen;
 
   if (S_ISDIR(st.st_mode)) {
-    ent->xflags = flags|RSYNC_ENTRY_FL_TOP_DIR|RSYNC_ENTRY_FL_CONTENT_DIR;
+    ent->flags = flags|RSYNC_ENTRY_CODEC_FL_TOP_DIR;
 
   } else {
-    ent->xflags = flags;
+    ent->flags = flags;
   }
 
 #if 0
 #if SIZEOF_OFF_T >= 8
   if (st->st_size > 0xffffffffU &&
       S_ISREG(st->st_mode)) {
-    ent->flags |= RSYNC_ENTRY_FL_LEN64;
+    ent->flags |= RSYNC_ENTRY_CODEC_FL_LEN64;
     ent->extras.uint = (uint32_t) (st.st_size >> 32);
   }
 #endif
 #endif
 
+  return ent;
+}
+
+int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
+    struct rsync_entry *ent, unsigned int protocol_version) {
+  uint32_t len = 0;
+
+  len += rsync_msg_write_byte(buf, buflen, ent->flags);
+
+  if (ent->flags & RSYNC_ENTRY_CODEC_FL_SAME_NAME) {
+    len += rsync_msg_write_byte(buf, buflen, 0);
+  }
+
+  if (ent->flags & RSYNC_ENTRY_CODEC_FL_LONG_NAME) {
+    /* XXX rsync_msg_write_varint */
+  } else {
+    len += rsync_msg_write_byte(buf, buflen, (char) ent->filesz);
+  }
+
   errno = ENOSYS;
-  return NULL;
+  return -1;
 }

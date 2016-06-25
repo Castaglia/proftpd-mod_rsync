@@ -35,6 +35,7 @@
  * will need to supply our own MD4.  Damn.
  */
 
-int rsync_checksum_handle(pool *, struct rsync_session *, char **, uint32_t *);
+int rsync_checksum_handle_data(pool *p, struct rsync_session *sess,
+  unsigned char **data, uint32_t *datalen);
 
 #endif

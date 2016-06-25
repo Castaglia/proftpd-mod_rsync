@@ -28,7 +28,7 @@
 #ifndef MOD_RSYNC_MANIFEST_H
 #define MOD_RSYNC_MANIFEST_H
 
-int rsync_manifest_handle(pool *p, struct rsync_session *sess,
+int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
   unsigned char **data, uint32_t *datalen);
 
 #endif

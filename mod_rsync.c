@@ -79,7 +79,7 @@ static int rsync_set_params(pool *p, uint32_t channel_id, array_header *req) {
 
   sess = rsync_session_get(channel_id);
 
-  if (rsync_options_handle(p, req, sess) < 0) {
+  if (rsync_options_handle_data(p, req, sess) < 0) {
     int xerrno = errno;
 
     (void) rsync_session_close(channel_id);
@@ -115,9 +115,9 @@ static int rsync_free_channel(uint32_t channel_id) {
 }
 
 static int rsync_handle_data_recv(pool *p, struct rsync_session *sess,
-    char *data, uint32_t datalen) {
+    unsigned char *data, uint32_t datalen) {
   struct rsync_options *opts;
-  char *buf, *ptr;
+  unsigned char *buf, *ptr;
   uint32_t buflen, bufsz;
 
   opts = sess->options;
@@ -185,8 +185,8 @@ static int rsync_handle_packet(pool *p, void *ssh2, uint32_t channel_id,
    */
 
   if (!(sess->state & RSYNC_SESS_FL_PROTO_VERSION)) {
-pr_trace_msg(trace_channel, 17, "handling protocol version");
-    if (rsync_version_handle(p, sess, &data, &datalen) < 0) {
+    pr_trace_msg(trace_channel, 17, "negotiating protocol version");
+    if (rsync_version_handle_data(p, sess, &data, &datalen) < 0) {
       return -1;
     }
 
@@ -197,8 +197,8 @@ pr_trace_msg(trace_channel, 17, "handling protocol version");
    * receiver, we need to read the checksum seed.
    */
   if (!(sess->state & RSYNC_SESS_FL_CHECKSUM_SEED)) {
-pr_trace_msg(trace_channel, 17, "handling checksum seed");
-    if (rsync_checksum_handle(p, sess, &data, &datalen) < 0) {
+    pr_trace_msg(trace_channel, 17, "handling checksum seed");
+    if (rsync_checksum_handle_data(p, sess, &data, &datalen) < 0) {
       return -1;
     }
 
@@ -212,7 +212,7 @@ pr_trace_msg(trace_channel, 17, "handling checksum seed");
 
   if (!(sess->state & RSYNC_SESS_FL_FILTERS)) {
 pr_trace_msg(trace_channel, 17, "handling filters");
-    if (rsync_filters_handle(p, sess, &data, &datalen) < 0) {
+    if (rsync_filters_handle_data(p, sess, &data, &datalen) < 0) {
       return -1;
     }
 
@@ -223,7 +223,7 @@ pr_trace_msg(trace_channel, 17, "handling filters");
 
   if (opts->sender) {
     if (!(sess->state & RSYNC_SESS_FL_SENT_MANIFEST)) {
-      if (rsync_manifest_handle(p, sess, &data, &datalen) < 0) {
+      if (rsync_manifest_handle_data(p, sess, &data, &datalen) < 0) {
         return -1;
       }
 
@@ -326,18 +326,20 @@ static int rsync_sess_init(void) {
 
   pr_event_unregister(&rsync_module, "core.exit", rsync_shutdown_ev);
 
-  c = find_config(main_server->conf, CONF_PARAM, "RsyncEngine", FALSE);
-  if (c) {
+  c = find_config(main_server->conf, CONF_PARAM, "RSyncEngine", FALSE);
+  if (c != NULL) {
     rsync_engine = *((int *) c->argv[0]);
   }
 
-  if (!rsync_engine)
+  if (rsync_engine == FALSE) {
     return 0;
+  }
 
-  c = find_config(main_server->conf, CONF_PARAM, "RsyncLog", FALSE);
-  if (c) {
-    const char *log_path = c->argv[0];
+  c = find_config(main_server->conf, CONF_PARAM, "RSyncLog", FALSE);
+  if (c != NULL) {
+    const char *log_path;
 
+    log_path = c->argv[0];
     if (strcasecmp(log_path, "none") != 0) {
       int res;
 
@@ -350,17 +352,17 @@ static int rsync_sess_init(void) {
       if (res < 0) {
         if (res == -1) {
           pr_log_pri(PR_LOG_NOTICE, MOD_RSYNC_VERSION
-            ": notice: unable to open RsyncLog '%s': %s", log_path,
+            ": notice: unable to open RSyncLog '%s': %s", log_path,
             strerror(errno));
 
         } else if (res == PR_LOG_WRITABLE_DIR) {
           pr_log_pri(PR_LOG_NOTICE, MOD_RSYNC_VERSION
-            ": notice: unable to open RsyncLog '%s': parent directory is "
+            ": notice: unable to open RSyncLog '%s': parent directory is "
             "world-writable", log_path);
 
         } else if (res == PR_LOG_SYMLINK) {
           pr_log_pri(PR_LOG_NOTICE, MOD_RSYNC_VERSION
-            ": notice: unable to open RsyncLog '%s': cannot log to a symlink",
+            ": notice: unable to open RSyncLog '%s': cannot log to a symlink",
             log_path);
         }
       }
@@ -405,6 +407,7 @@ static conftable rsync_conftab[] = {
   { "RSyncEngine",		set_rsyncengine,		NULL },
   { "RSyncLog",			set_rsynclog,			NULL },
   { "RSyncOptions",		set_rsyncoptions,		NULL },
+
   { NULL }
 };
 

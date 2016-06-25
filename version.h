@@ -33,20 +33,14 @@
 
 /* Define a narrow range of acceptable supported rsync protocol versions until
  * support for older versions is added.
- *
- * Protocol version 28 was first supported by rsync-2.6.1.
- *
- * We do NOT want to support any version of the protocol older than version 27;
- * versions older than that had bugs in their MD4 implementation which are
- * incompatible with e.g. OpenSSL's MD4 implementation.
  */
 #define RSYNC_PROTOCOL_VERSION_MIN      28
-#define RSYNC_PROTOCOL_VERSION_MAX      30
+#define RSYNC_PROTOCOL_VERSION_MAX      31
 
 /* Protocol version compatibility flags */
-#define RSYNC_VERSION_COMPAT_FL_INCR_RECURSE		(1 << 0)
+#define RSYNC_VERSION_COMPAT_FL_INCR_RECURSE		0x0001
 
-int rsync_version_handle(pool *p, struct rsync_session *sess,
+int rsync_version_handle_data(pool *p, struct rsync_session *sess,
   unsigned char **data, uint32_t *datalen);
 
 #endif /* MOD_RSYNC_VERSION_H */

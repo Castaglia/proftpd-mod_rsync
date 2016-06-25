@@ -26,19 +26,14 @@
 #include "options.h"
 #include "disconnect.h"
 
-#if 0
-#include "popt/popt.h"
-#endif
-
 #include <popt.h>
 
-static const char *trace_channel = "rsync.options";
+static const char *trace_channel = "rsync";
 
 /* We use the popt option parsing library, rather than getopt(3), because
  * getopt(3) can't handle the variety of options that rsync uses.
  */
 
-/*static struct rsync_options default_options;*/
 struct rsync_options default_options;
 static int use_server = 0;
 
@@ -487,7 +482,7 @@ static void dump_options(struct rsync_options *opts) {
   }
 }
 
-int rsync_options_handle(pool *p, array_header *req,
+int rsync_options_handle_data(pool *p, array_header *req,
     struct rsync_session *sess) {
   register unsigned int i;
   poptContext pc;
@@ -529,6 +524,8 @@ int rsync_options_handle(pool *p, array_header *req,
     /* Most options are handled automatically by popt.  Only the special
      * cases are returned, and thus handled here.
      */
+
+pr_trace_msg(trace_channel, 7, "options: poptGetNextOpt() returned %d", opt);
 
     switch (opt) {
       case OPT_SERVER:
@@ -709,8 +706,12 @@ int rsync_options_handle(pool *p, array_header *req,
   argc = 0;
 
   for (i = 0; argv && argv[i]; i++) {
+    pr_trace_msg(trace_channel, 17, "received arg #%u: '%s'", argc+1,
+      argv[i]);
     argc++;
   }
+
+  pr_trace_msg(trace_channel, 13, "received args (%u)", argc);
 
   /* If the client didn't send the --server option, it's an error. */
   if (!use_server) {
@@ -742,9 +743,6 @@ int rsync_options_handle(pool *p, array_header *req,
 }
 
 int rsync_options_init(void) {
-  config_rec *c;
-
   /* Some of the options may not be allowed due to the configuration. */
-
   return 0;
 }

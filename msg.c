@@ -166,12 +166,12 @@ int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
 
 char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
     size_t datalen) {
-  char *data = NULL;
+  unsigned char *data = NULL;
 
   data = rsync_msg_read_data(p, buf, buflen, datalen);
   data[datalen] = '\0';
 
-  return data;
+  return (char *) data;
 }
 
 uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
@@ -195,7 +195,7 @@ uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
 }
 
 uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
-    unsigned const char *data, size_t datalen) {
+    const unsigned char *data, size_t datalen) {
   uint32_t len = 0;
 
   if (*buflen < datalen) {
@@ -263,5 +263,5 @@ uint32_t rsync_msg_write_string(unsigned char **buf, uint32_t *buflen,
   size_t len;
 
   len = strlen(str);
-  return rsync_msg_write_data(buf, buflen, str, len);
+  return rsync_msg_write_data(buf, buflen, (const unsigned char *) str, len);
 }

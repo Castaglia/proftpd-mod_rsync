@@ -28,7 +28,7 @@
 #ifndef MOD_RSYNC_FILTERS_H
 #define MOD_RSYNC_FILTERS_H
 
-int rsync_filters_handle(pool *p, struct rsync_session *sess,
+int rsync_filters_handle_data(pool *p, struct rsync_session *sess,
   unsigned char **data, uint32_t *datalen);
 
 #endif

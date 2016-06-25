@@ -28,7 +28,7 @@
 #include "disconnect.h"
 #include "entry.h"
 
-static const char *trace_channel = "rsync.manifest";
+static const char *trace_channel = "rsync";
 
 /* Returns -1 to indicate that the given path is explicitly excluded, 1 to
  * indicate that the given path is explicitly included, and 0 to indicate that
@@ -54,16 +54,15 @@ static int exclude_file(pool *p, array_header *filters, const char *path) {
   return 0;
 }
 
-int rsync_manifest_handle(pool *p, struct rsync_session *sess,
+int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
     unsigned char **data, uint32_t *datalen) {
   register unsigned int i;
   unsigned char *buf, *ptr;
   char **names;
   uint32_t buflen, bufsz;
-  array_header *args, *filters;
+  array_header *args, *filters, *entries;
   struct rsync_options *opts;
   int res;
-  unsigned int nentries = 0;
 
   opts = sess->options;
   filters = sess->filters;
@@ -74,25 +73,41 @@ int rsync_manifest_handle(pool *p, struct rsync_session *sess,
    * to sort and clean the list before sending.  Sigh.
    */
 
+  entries = make_array(p, 0, sizeof(struct rsync_entry *));
+
   names = args->elts;
   for (i = 0; i < args->nelts; i++) {
     struct rsync_entry *ent;
     int flags = 0;
 
     res = exclude_file(p, filters, names[i]);
-    if (res == -1) {
+    if (res < 0) {
       pr_trace_msg(trace_channel, 9, "path '%s' excluded by filters", names[i]);
       continue;
     }
 
     ent = rsync_entry_create(p, sess, names[i], flags);
-
-    /* XXX Handle real manifest entry */
-    nentries++;
+    *((struct rsync_entry **) push_array(entries)) = ent;
   }
 
-  bufsz = buflen = sizeof(int32_t) * 2;
+  /* XXX TODO: Scan the entire list of entries, cleaning up things (e.g.
+   * XMIT_SAME_ flags, etc).
+   */
+
+  /* This buffer could be potentially be VERY large. */
+  bufsz = buflen = 8192;
   ptr = buf = palloc(p, bufsz);
+
+  for (i = 0; i < entries->nelts; i++) {
+    struct rsync_entry *ent;
+
+    ent = ((struct rsync_entry **) entries->elts)[i];
+    if (rsync_entry_encode(p, &buf, &buflen, ent, sess->protocol_version) < 0) {
+      (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
+        "error encoding file entry for '%.*s': %s", (int) ent->pathsz,
+        ent->path, strerror(errno));
+    }
+  }
 
   /* Indicate the end-of-manifest */
   rsync_msg_write_int(&buf, &buflen, 0);
@@ -113,6 +128,7 @@ int rsync_manifest_handle(pool *p, struct rsync_session *sess,
     return -1;
   }
 
-  pr_trace_msg(trace_channel, 9, "sent file manifest (%u entries)", nentries);
+  pr_trace_msg(trace_channel, 9, "sent file manifest (%u entries)",
+    entries->nelts);
   return 0;
 }
