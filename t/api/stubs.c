@@ -40,7 +40,7 @@ int rsync_logfd = -1;
 module rsync_module;
 pool *rsync_pool = NULL;
 unsigned long rsync_opts = 0UL;
-int (*rsync_write_data)(pool *, uint32_t, char *, uint32_t);
+int (*rsync_write_data)(pool *, uint32_t, unsigned char *, uint32_t);
 
 static cmd_rec *next_cmd = NULL;
 
