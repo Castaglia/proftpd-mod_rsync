@@ -63,7 +63,13 @@ Links:
     mode.  (Also points out the need to explicitly NOT support options which
     would prevent the use of incremental mode.)
 
+  https://tools.ietf.org/html/rfc5781
+    The rsync URI Scheme
+
 Related:
+
+  https://librsync.sourcefrog.net/
+    librsync
 
   http://www.netbits.us/docs/stunnel_rsync.html 
     rsync over SSL
