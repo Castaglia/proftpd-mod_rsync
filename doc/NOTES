@@ -71,6 +71,8 @@ Related:
   https://librsync.sourcefrog.net/
     librsync
 
+  http://serverfault.com/questions/224796/does-librsync-really-reduce-bandwidth-for-amazon-s3
+
   http://www.netbits.us/docs/stunnel_rsync.html 
     rsync over SSL
 
