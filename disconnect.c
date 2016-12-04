@@ -25,7 +25,7 @@
 #include "mod_rsync.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.disconnect";
 
 void rsync_disconnect(const char *reason, const char *file, int lineno,
     const char *func) {
@@ -39,5 +39,6 @@ void rsync_disconnect(const char *reason, const char *file, int lineno,
       reason, file, lineno);
   }
 
-  end_login(1);
+  pr_session_disconnect(&rsync_module, PR_SESS_DISCONNECT_BY_APPLICATION,
+    reason);
 }
