@@ -22,11 +22,11 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
-
 #ifndef MOD_RSYNC_VERSION_H
 #define MOD_RSYNC_VERSION_H
+
+#include "mod_rsync.h"
+#include "session.h"
 
 /* The rsync protocol version we want to use. */
 #define RSYNC_PROTOCOL_VERSION          30

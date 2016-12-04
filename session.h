@@ -22,10 +22,10 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-
 #ifndef MOD_RSYNC_SESSION_H
 #define MOD_RSYNC_SESSION_H
+
+#include "mod_rsync.h"
 
 /* This struct is used to maintain the per-channel rsync-specific state. */
 struct rsync_session {

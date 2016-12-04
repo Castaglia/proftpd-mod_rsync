@@ -22,10 +22,10 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-
 #ifndef MOD_RSYNC_DISCONNECT_H
 #define MOD_RSYNC_DISCONNECT_H
+
+#include "mod_rsync.h"
 
 void rsync_disconnect(const char *, const char *, int, const char *);
 
@@ -47,4 +47,4 @@ void rsync_disconnect(const char *, const char *, int, const char *);
 
 # endif
 
-#endif
+#endif /* MOD_RSYNC_DISCONNECT_H */

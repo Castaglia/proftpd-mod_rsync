@@ -22,11 +22,11 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
-
 #ifndef MOD_RSYNC_CHECKSUM_H
 #define MOD_RSYNC_CHECKSUM_H
+
+#include "mod_rsync.h"
+#include "session.h"
 
 /* XXX Protocol version 30 and later use MD5; prior to that, MD4.
  *
@@ -38,4 +38,4 @@
 int rsync_checksum_handle_data(pool *p, struct rsync_session *sess,
   unsigned char **data, uint32_t *datalen);
 
-#endif
+#endif /* MOD_RSYNC_CHECKSUM_H */

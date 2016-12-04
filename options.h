@@ -22,11 +22,11 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
-
 #ifndef MOD_RSYNC_OPTIONS_H
 #define MOD_RSYNC_OPTIONS_H
+
+#include "mod_rsync.h"
+#include "session.h"
 
 struct rsync_options {
   int allow_incr_recurse;
@@ -109,4 +109,4 @@ int rsync_options_handle_data(pool *p, array_header *req,
   struct rsync_session *sess);
 int rsync_options_init(void);
 
-#endif
+#endif /* MOD_RSYNC_OPTIONS_H */

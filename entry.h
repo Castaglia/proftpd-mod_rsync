@@ -22,11 +22,11 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
-
 #ifndef MOD_RSYNC_ENTRY_H
 #define MOD_RSYNC_ENTRY_H
+
+#include "mod_rsync.h"
+#include "session.h"
 
 struct rsync_entry {
   const char *path;
@@ -98,4 +98,4 @@ struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
 int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
   struct rsync_entry *entry, unsigned int protocol_version);
 
-#endif
+#endif /* MOD_RSYNC_ENTRY_H */

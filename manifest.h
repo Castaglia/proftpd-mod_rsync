@@ -22,13 +22,13 @@
  * source distribution.
  */
 
-#include "mod_rsync.h"
-#include "session.h"
-
 #ifndef MOD_RSYNC_MANIFEST_H
 #define MOD_RSYNC_MANIFEST_H
+
+#include "mod_rsync.h"
+#include "session.h"
 
 int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
   unsigned char **data, uint32_t *datalen);
 
-#endif
+#endif /* MOD_RSYNC_MANIFEST_H */
