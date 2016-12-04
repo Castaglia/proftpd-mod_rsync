@@ -25,6 +25,7 @@
 /* Checksum API tests. */
 
 #include "tests.h"
+#include "checksum.h"
 
 static pool *p = NULL;
 
@@ -38,7 +39,7 @@ static void tear_down(void) {
   if (p) {
     destroy_pool(p);
     p = NULL;
-  } 
+  }
 }
 
 START_TEST (checksum_md5_test) {

@@ -30,6 +30,7 @@ struct testsuite_info {
 };
 
 static struct testsuite_info suites[] = {
+  { "msg",		tests_get_msg_suite },
   { "checksum",		tests_get_checksum_suite },
 
   { NULL, NULL }
