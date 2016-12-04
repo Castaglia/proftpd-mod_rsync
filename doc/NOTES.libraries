@@ -1,0 +1,41 @@
+
+Currently I'm relying on:
+
+  libpopt
+  librsync
+
+Both of which are...not exactly common.  popt is often bundled as part of
+rpm, but is not exactly ubiquitous as a library.  And librsync is just a
+royal pain in the tuchus.
+
+Are both necessary?  If so, should they be bundled into the mod_rsync source
+code?  If not, can I write my own code to do what they do?  Poach just the
+relevant bits?
+
+To make libpopt:
+
+  # Download it from:
+  #  http://rpm5.org/files/popt/
+  $ ./configure --prefix=/Users/tj/local/popt-1.16
+
+to make librsync:
+
+  # Download 1.0.0 from GitHub.  1.0.1 switched from Autoconf to CMake.
+  #
+  # Released version does NOT provide configure script; you have to
+  # make it via autogen.sh.  Sigh.
+  #
+  $ PATH=$PATH:/path/to/libtool/bin:/path/to/automake/bin:/path/to/autoconf/bin ./autogen.sh
+
+  # librsync doesn't tell you it wants popt.  You'll just encounter:
+  #
+  #  rdiff.c:54:10: fatal error: 'popt.h' file not found
+  #  #include <popt.h>
+  #
+  $ ./configure CFLAGS=-I/Users/tj/local/popt-1.16/include LDFLAGS=-L/Users/tj/local/popt-1.16/lib --prefix=/Users/tj/local/librsync-1.0.0
+
+  # And even that will fail, complaining of linker errors about missing
+  # symbols.
+  #
+  # The delta.c file declares multiple rs_ functions as "inline"; remove that
+  # inline keyword.  Sheesh.

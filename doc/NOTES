@@ -17,6 +17,16 @@ anon rsync, or auth'd rsync over ssh.  No auth'd rsync over non-ssh?)
 Will need to link to libpopt, in order to provide feature parity with
 the rsync command-line options.
 
+Get libpopt from:
+
+  http://rpm5.org/files/popt/
+
+Get librsync from:
+
+  https://github.com/librsync/librsync
+
+Note that in librsync-1.0.1, they switched from Autoconf to CMake.  Ick.
+
   http://www.mail-archive.com/psst@net.lut.ac.uk/msg00715.html
 
 To handle rsync-over-ssh, mod_rsync would need to see if mod_sftp is
