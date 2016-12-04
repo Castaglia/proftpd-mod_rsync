@@ -20,6 +20,10 @@ install:
   - sudo apt-get install -y lcov
   - gem install coveralls-lcov
 
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - lcov --directory . --zerocounters
+
 script:
   # - find . -type f -name "*.c" -print | grep -v t\/ | xargs cppcheck 2>&1
   # - find . -type f -name "*.c" -print | grep -v t\/ | xargs rats --language=c
@@ -39,3 +43,14 @@ script:
   - ./configure --enable-devel=coverage --enable-tests --with-modules=mod_sftp:mod_rsync
   - make
   - cd contrib/mod_rsync && make TEST_VERBOSE=1 check && cd ../../
+
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}
+  # capture the test coverage info
+  - lcov --ignore-errors gcov,source --base-directory ${TRAVIS_BUILD_DIR}/proftpd/contrib/mod_rsync --directory proftpd/contrib/mod_rsync --capture --output-file coverage.info
+  # filter out system and test code
+  - lcov --remove coverage.info 'api/*' 't/*' '/usr/*' --output-file coverage.info
+  # debug before upload
+  - lcov --list coverage.info
+  # upload coverage info to coveralls
+  - coveralls-lcov coverage.info
