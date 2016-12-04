@@ -91,11 +91,17 @@ char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen) {
 
   (void) p;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   if (*buflen < sizeof(char)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "data error: unable to read byte (buflen = %lu)",
+      "IO error: unable to read byte (buflen = %lu)",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   memcpy(&byte, *buf, sizeof(char));
@@ -109,11 +115,24 @@ unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
     uint32_t *buflen, size_t datalen) {
   unsigned char *data = NULL;
 
+  if (p == NULL ||
+      buf == NULL ||
+      buflen == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to read %lu bytes of data from %lu byte buffer",
-      (unsigned long) datalen, (unsigned long) *buflen);
+      "IO error: unable to read %lu %s of data from %lu byte buffer",
+      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return NULL;
+  }
+
+  if (datalen == 0) {
+    return NULL;
   }
 
   data = palloc(p, datalen);
@@ -129,11 +148,17 @@ int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen) {
 
   (void) p;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   if (*buflen < sizeof(int32_t)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "IO error: unable to read int from %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   memcpy(&val, *buf, sizeof(int32_t));
@@ -149,11 +174,17 @@ int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
 
   (void) p;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   if (*buflen < sizeof(int64_t)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "IO error: unable to read long from %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   memcpy(&val, *buf, sizeof(int64_t));
@@ -167,24 +198,35 @@ int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
 char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
     size_t datalen) {
   unsigned char *data = NULL;
+  char *s;
 
   data = rsync_msg_read_data(p, buf, buflen, datalen);
-  data[datalen] = '\0';
+  if (data == NULL) {
+    return NULL;
+  }
 
-  return (char *) data;
+  s = pcalloc(p, datalen+1);
+  memmove(s, data, datalen);
+  return s;
 }
 
 uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
     char byte) {
   uint32_t len;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   len = sizeof(char);
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "data error: unable to write byte to %lu byte buffer",
+      "IO error: unable to write byte to %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   memcpy(*buf, &byte, len);
@@ -198,11 +240,19 @@ uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
     const unsigned char *data, size_t datalen) {
   uint32_t len = 0;
 
+  if (buf == NULL ||
+      buflen == NULL ||
+      data == NULL) {
+    return 0;
+  }
+
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "data error: unable to write %lu bytes of data to %lu byte buffer",
-      (unsigned long) datalen, (unsigned long) *buflen);
+      "IO error: unable to write %lu %s of data to %lu byte buffer",
+      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   if (datalen > 0) {
@@ -220,13 +270,19 @@ uint32_t rsync_msg_write_int(unsigned char **buf, uint32_t *buflen,
     int32_t val) {
   uint32_t len = 0;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   len = sizeof(int32_t);
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "data error: unable to write int to %lu byte buffer",
+      "IO error: unable to write int to %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   val = rsync_ntole32(val);
@@ -241,13 +297,19 @@ uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
     int64_t val) {
   uint32_t len = 0;
 
+  if (buf == NULL ||
+      buflen == NULL) {
+    return 0;
+  }
+
   len = sizeof(int64_t);
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "data error: unable to write long to %lu byte buffer",
+      "IO error: unable to write long to %lu byte buffer",
       (unsigned long) *buflen);
     RSYNC_DISCONNECT("IO error");
+    return 0;
   }
 
   val = rsync_ntole64(val);
@@ -259,9 +321,15 @@ uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
 }
 
 uint32_t rsync_msg_write_string(unsigned char **buf, uint32_t *buflen,
-    const char *str) {
+    const char *s) {
   size_t len;
 
-  len = strlen(str);
-  return rsync_msg_write_data(buf, buflen, (const unsigned char *) str, len);
+  if (buf == NULL ||
+      buflen == NULL ||
+      s == NULL) {
+    return 0;
+  }
+
+  len = strlen(s);
+  return rsync_msg_write_data(buf, buflen, (const unsigned char *) s, len);
 }
