@@ -55,7 +55,7 @@ int rsync_filters_handle_data(pool *p, struct rsync_session *sess,
        (opts->delete_mode == TRUE && sess->protocol_version >= 29))) {
 #define RSYNC_MAX_STRLEN        4096
     int32_t filter_len;
-    unsigned char *filter_data;
+    char *filter_data;
 
     filter_len = rsync_msg_read_int(p, data, datalen);
 
