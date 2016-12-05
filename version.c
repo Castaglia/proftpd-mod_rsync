@@ -28,7 +28,7 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.version";
 
 int rsync_version_handle_data(pool *p, struct rsync_session *sess,
     unsigned char **data, uint32_t *datalen) {
@@ -51,6 +51,7 @@ int rsync_version_handle_data(pool *p, struct rsync_session *sess,
   if ((rsync_write_data)(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "error sending server protocol version: %s", strerror(errno));
+    errno = EIO;
     return -1;
   }
 
@@ -65,11 +66,15 @@ int rsync_version_handle_data(pool *p, struct rsync_session *sess,
   /* Is this protocol version too old for us? */
   if (sess->protocol_version < RSYNC_PROTOCOL_VERSION_MIN) {
     RSYNC_DISCONNECT("protocol version too old");
+    errno = EPERM;
+    return -1;
   }
  
   /* Is this protocol version too new for us? */
   if (sess->protocol_version > RSYNC_PROTOCOL_VERSION_MAX) {
     RSYNC_DISCONNECT("protocol version too new"); 
+    errno = EPERM;
+    return -1;
   }
 
   opts = sess->options;
@@ -77,10 +82,14 @@ int rsync_version_handle_data(pool *p, struct rsync_session *sess,
   if (sess->protocol_version < 29) {
     if (opts->fuzzy_basis) {
       RSYNC_DISCONNECT("--fuzzy option not supported by protocol version");
+      errno = EINVAL;
+      return -1;
     }
 
     if (opts->prune_empty_dirs) {
       RSYNC_DISCONNECT("--prune-empty-dirs option not supported by protocol version");
+      errno = EINVAL;
+      return -1;
     }
   }
 
@@ -91,10 +100,14 @@ int rsync_version_handle_data(pool *p, struct rsync_session *sess,
 
     if (opts->preserve_acls) {
       RSYNC_DISCONNECT("--acls option not supported by protocol version");
+      errno = EINVAL;
+      return -1;
     }
 
     if (opts->preserve_xattrs) {
       RSYNC_DISCONNECT("--xattrs option not supported by protocol version");
+      errno = EINVAL;
+      return -1;
     }
   }
 
@@ -129,6 +142,7 @@ int rsync_version_handle_data(pool *p, struct rsync_session *sess,
         (bufsz - buflen)) < 0) {
       (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
         "error sending compatibility flags: %s", strerror(errno));
+      errno = EIO;
       return -1;
     }
   }

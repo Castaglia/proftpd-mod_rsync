@@ -100,6 +100,7 @@ char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
       "IO error: unable to read byte (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -124,9 +125,10 @@ unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
 
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to read %lu %s of data from %lu byte buffer",
+      "IO error: unable to read %lu %s of data (buflen = %lu)",
       (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return NULL;
   }
@@ -155,8 +157,9 @@ int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen) {
 
   if (*buflen < sizeof(int32_t)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to read int from %lu byte buffer",
+      "IO error: unable to read int (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -181,8 +184,9 @@ int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
 
   if (*buflen < sizeof(int64_t)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to read long from %lu byte buffer",
+      "IO error: unable to read long (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -223,8 +227,9 @@ uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to write byte to %lu byte buffer",
+      "IO error: unable to write byte (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -248,9 +253,10 @@ uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
 
   if (*buflen < datalen) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to write %lu %s of data to %lu byte buffer",
+      "IO error: unable to write %lu %s of data (buflen = %lu)",
       (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -279,8 +285,9 @@ uint32_t rsync_msg_write_int(unsigned char **buf, uint32_t *buflen,
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to write int to %lu byte buffer",
+      "IO error: unable to write int (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
@@ -306,8 +313,9 @@ uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
 
   if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to write long to %lu byte buffer",
+      "IO error: unable to write long (buflen = %lu)",
       (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }

@@ -244,6 +244,9 @@ void pr_log_pri(int prio, const char *fmt, ...) {
   }
 }
 
+void pr_log_stacktrace(int logfd, char char *name) {
+}
+
 int pr_log_writefile(int fd, const char *name, const char *fmt, ...) {
   if (getenv("TEST_VERBOSE") != NULL) {
     va_list msg;

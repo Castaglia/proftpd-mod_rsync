@@ -28,7 +28,7 @@
 #include "msg.h"
 #include "disconnect.h"
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.checksum";
 
 #ifdef OPENSSL_NO_MD4
 typedef struct {
@@ -221,7 +221,6 @@ static unsigned char *MD4(const unsigned char *data, size_t data_len,
   MD4_Update(&ctx, data, data_len);
   MD4_Final(digest, &ctx);
 }
-
 #endif /* OPENSSL_NO_MD4 */
 
 int rsync_checksum_handle_data(pool *p, struct rsync_session *sess,
@@ -252,6 +251,7 @@ pr_trace_msg(trace_channel, 17, "generated checksum seed %lu", (unsigned long) o
     if ((rsync_write_data)(p, sess->channel_id, ptr, (bufsz - buflen)) < 0) {
       (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
         "error sending checksum seed: %s", strerror(errno));
+      errno = EIO;
       return -1;
     }
 
