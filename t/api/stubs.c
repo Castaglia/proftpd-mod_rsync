@@ -244,7 +244,7 @@ void pr_log_pri(int prio, const char *fmt, ...) {
   }
 }
 
-void pr_log_stacktrace(int logfd, char char *name) {
+void pr_log_stacktrace(int logfd, const char *name) {
 }
 
 int pr_log_writefile(int fd, const char *name, const char *fmt, ...) {
