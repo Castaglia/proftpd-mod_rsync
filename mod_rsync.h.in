@@ -40,6 +40,11 @@
 
 #define MOD_RSYNC_VERSION	"mod_rsync/0.0"
 
+/* Make sure the version of proftpd is as necessary. */
+#if PROFTPD_VERSION_NUMBER < 0x0001030603
+# error "ProFTPD 1.3.6rc3 or later required"
+#endif
+
 /* Define if you have the <endian.h> header file.  */
 #undef HAVE_ENDIAN_H
 
