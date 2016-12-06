@@ -20,6 +20,7 @@ MODULE_OBJS=mod_rsync.o \
   checksum.o \
   filters.o \
   manifest.o \
+  names.o \
   entry.o
 
 SHARED_MODULE_OBJS=mod_rsync.lo \
@@ -31,6 +32,7 @@ SHARED_MODULE_OBJS=mod_rsync.lo \
   checksum.lo \
   filters.lo \
   manifest.lo \
+  names.lo \
   entry.lo
 
 # Necessary redefinitions
