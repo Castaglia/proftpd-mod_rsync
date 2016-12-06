@@ -28,7 +28,7 @@
 #define MOD_RSYNC_MSG_H
 
 char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen);
-uint16_ rsync_msg_read_short(pool *p, unsigned char **buf, uint32_t *buflen);
+uint16_t rsync_msg_read_short(pool *p, unsigned char **buf, uint32_t *buflen);
 int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen);
 int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen);
 unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
