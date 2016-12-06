@@ -65,6 +65,9 @@
 #endif /* LITTLE_ENDIAN */
 
 #if BYTE_ORDER == BIG_ENDIAN
+# define rsync_ntole16(x) \
+    ((uint32_t) (x) & 0x0000ff00) << 8) | \
+    ((uint32_t) (x) & 0x00ff0000) >> 8)
 # define rsync_ntole32(x) \
     ((uint32_t) (x) & 0x000000ff) << 24) | \
     ((uint32_t) (x) & 0x0000ff00) << 8)  | \
@@ -80,6 +83,7 @@
     ((uint64_t) (x) & 0x00ff000000000000) >> 40) | \
     ((uint64_t) (x) & 0xff00000000000000) >> 56)
 #elif BYTE_ORDER == LITTLE_ENDIAN
+# define rsync_ntole16(x)	((uint16_t) (x))
 # define rsync_ntole32(x)	((uint32_t) (x))
 # define rsync_ntole64(x)	((uint64_t) (x))
 #else
@@ -112,37 +116,31 @@ char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen) {
   return byte;
 }
 
-unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
-    uint32_t *buflen, size_t datalen) {
-  unsigned char *data = NULL;
+int16_t rsync_msg_read_short(pool *p, unsigned char **buf, uint32_t *buflen) {
+  int16_t val = 0;
 
-  if (p == NULL ||
-      buf == NULL ||
+  (void) p;
+
+  if (buf == NULL ||
       buflen == NULL) {
-    errno = EINVAL;
-    return NULL;
+    return 0;
   }
 
-  if (*buflen < datalen) {
+  if (*buflen < sizeof(int16_t)) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to read %lu %s of data (buflen = %lu)",
-      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      "IO error: unable to read short (buflen = %lu)",
       (unsigned long) *buflen);
     pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
-    return NULL;
+    return 0;
   }
 
-  if (datalen == 0) {
-    return NULL;
-  }
+  memcpy(&val, *buf, sizeof(int16_t));
+  (*buf) += sizeof(int16_t);
+  (*buflen) -= sizeof(int16_t);
 
-  data = palloc(p, datalen);
-  memcpy(data, *buf, datalen);
-  (*buf) += datalen;
-  (*buflen) -= datalen;
-
-  return data;
+  val = rsync_ntole16(val);
+  return val;
 }
 
 int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen) {
@@ -199,6 +197,39 @@ int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen) {
   return val;
 }
 
+unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
+    uint32_t *buflen, size_t datalen) {
+  unsigned char *data = NULL;
+
+  if (p == NULL ||
+      buf == NULL ||
+      buflen == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+
+  if (*buflen < datalen) {
+    (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
+      "IO error: unable to read %lu %s of data (buflen = %lu)",
+      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
+    RSYNC_DISCONNECT("IO error");
+    return NULL;
+  }
+
+  if (datalen == 0) {
+    return NULL;
+  }
+
+  data = palloc(p, datalen);
+  memcpy(data, *buf, datalen);
+  (*buf) += datalen;
+  (*buflen) -= datalen;
+
+  return data;
+}
+
 char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
     size_t datalen) {
   unsigned char *data = NULL;
@@ -241,33 +272,30 @@ uint32_t rsync_msg_write_byte(unsigned char **buf, uint32_t *buflen,
   return len;
 }
 
-uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
-    const unsigned char *data, size_t datalen) {
+uint32_t rsync_msg_write_short(unsigned char **buf, uint32_t *buflen,
+    int16_t val) {
   uint32_t len = 0;
 
   if (buf == NULL ||
-      buflen == NULL ||
-      data == NULL) {
+      buflen == NULL) {
     return 0;
   }
 
-  if (*buflen < datalen) {
+  len = sizeof(int16_t);
+
+  if (*buflen < len) {
     (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
-      "IO error: unable to write %lu %s of data (buflen = %lu)",
-      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      "IO error: unable to write short (buflen = %lu)",
       (unsigned long) *buflen);
     pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
     RSYNC_DISCONNECT("IO error");
     return 0;
   }
 
-  if (datalen > 0) {
-    memcpy(*buf, data, datalen);
-    (*buf) += datalen;
-    (*buflen) -= datalen;
-
-    len += datalen;
-  }
+  val = rsync_ntole16(val);
+  memcpy(*buf, &val, len);
+  (*buf) += len;
+  (*buflen) -= len;
 
   return len;
 }
@@ -324,6 +352,37 @@ uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
   memcpy(*buf, &val, len);
   (*buf) += len;
   (*buflen) -= len;
+
+  return len;
+}
+
+uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
+    const unsigned char *data, size_t datalen) {
+  uint32_t len = 0;
+
+  if (buf == NULL ||
+      buflen == NULL ||
+      data == NULL) {
+    return 0;
+  }
+
+  if (*buflen < datalen) {
+    (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
+      "IO error: unable to write %lu %s of data (buflen = %lu)",
+      (unsigned long) datalen, datalen != 1 ? "bytes" : "byte",
+      (unsigned long) *buflen);
+    pr_log_stacktrace(rsync_logfd, MOD_RSYNC_VERSION);
+    RSYNC_DISCONNECT("IO error");
+    return 0;
+  }
+
+  if (datalen > 0) {
+    memcpy(*buf, data, datalen);
+    (*buf) += datalen;
+    (*buflen) -= datalen;
+
+    len += datalen;
+  }
 
   return len;
 }
