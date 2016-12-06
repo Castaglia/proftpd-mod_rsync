@@ -30,8 +30,11 @@ struct testsuite_info {
 };
 
 static struct testsuite_info suites[] = {
+  { "session",		tests_get_session_suite },
   { "msg",		tests_get_msg_suite },
   { "checksum",		tests_get_checksum_suite },
+  { "names",		tests_get_names_suite },
+  { "entry",		tests_get_entry_suite },
 
   { NULL, NULL }
 };

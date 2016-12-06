@@ -28,12 +28,41 @@
 
 static const char *trace_channel = "rsync.names";
 
-const char *rsync_names_add_uid(struct rsync_session *sess, uid_t uid) {
+/* Note: see the rsync source code's uidlist.c file for the implementation;
+ * the prototypes are declared in proto.h.
+ */
+
+const char *rsync_names_add_uid(pool *p, struct rsync_session *sess,
+    uid_t uid) {
+  const char *name;
+
+  if (p == NULL ||
+      sess == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+
+  if (uid == PR_ROOT_UID) {
+    /* Don't map root. */
+    errno = EPERM;
+    return NULL;
+  }
+
+  name = pr_auth_uid2name(p, uid);
+
   errno = ENOSYS;
   return NULL;
 }
 
-const char *rsync_names_add_gid(struct rsync_session *sess, gid_t gid) {
+const char *rsync_names_add_gid(pool *p, struct rsync_session *sess,
+    gid_t gid) {
+
+  if (p == NULL ||
+      sess == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+
   errno = ENOSYS;
   return NULL;
 }

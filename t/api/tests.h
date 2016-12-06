@@ -40,8 +40,11 @@ int tests_write_data(pool *p, uint32_t channel_id, unsigned char *buf,
   uint32_t buflen);
 int tests_stubs_set_next_cmd(cmd_rec *cmd);
 
+Suite *tests_get_session_suite(void);
 Suite *tests_get_msg_suite(void);
 Suite *tests_get_checksum_suite(void);
+Suite *tests_get_names_suite(void);
+Suite *tests_get_entry_suite(void);
 
 unsigned int recvd_signal_flags;
 extern pid_t mpid;

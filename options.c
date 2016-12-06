@@ -525,8 +525,6 @@ int rsync_options_handle_data(pool *p, array_header *req,
      * cases are returned, and thus handled here.
      */
 
-pr_trace_msg(trace_channel, 7, "options: poptGetNextOpt() returned %d", opt);
-
     switch (opt) {
       case OPT_SERVER:
         use_server = TRUE;

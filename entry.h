@@ -92,10 +92,9 @@ struct rsync_entry {
 #define RSYNC_ENTRY_DATA_FL_TIME_FAILED		0x0800
 #define RSYNC_ENTRY_DATA_FL_MTIME_NSECS		0x1000
 
-struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-  const char *path, int flags);
+struct rsync_entry *rsync_entry_create(pool *p, const char *path, int flags);
 
 int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
-  struct rsync_entry *entry, unsigned int protocol_version);
+  struct rsync_entry *entry, struct rsync_session *sess);
 
 #endif /* MOD_RSYNC_ENTRY_H */

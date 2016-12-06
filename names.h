@@ -28,7 +28,7 @@
 #include "mod_rsync.h"
 #include "session.h"
 
-const char *rsync_names_add_uid(struct rsync_session *sess, uid_t uid);
-const char *rsync_names_add_gid(struct rsync_session *sess, gid_t gid);
+const char *rsync_names_add_uid(pool *p, struct rsync_session *sess, uid_t uid);
+const char *rsync_names_add_gid(pool *p, struct rsync_session *sess, gid_t gid);
 
 #endif /* MOD_RSYNC_NAMES_H */

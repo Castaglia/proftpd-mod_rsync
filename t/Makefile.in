@@ -39,21 +39,25 @@ TEST_API_DEPS=\
   $(top_srcdir)/src/env.o \
   $(top_srcdir)/src/trace.o \
   $(top_srcdir)/src/support.o \
+  $(module_srcdir)/session.o \
   $(module_srcdir)/checksum.o \
   $(module_srcdir)/disconnect.o \
+  $(module_srcdir)/names.o \
   $(module_srcdir)/entry.o \
   $(module_srcdir)/filters.o \
   $(module_srcdir)/manifest.o \
   $(module_srcdir)/msg.o \
   $(module_srcdir)/options.o \
-  $(module_srcdir)/session.o \
   $(module_srcdir)/version.o
 
 TEST_API_LIBS=-lcheck
 
 TEST_API_OBJS=\
+  api/session.o \
   api/msg.o \
   api/checksum.o \
+  api/names.o \
+  api/entry.o \
   api/stubs.o \
   api/tests.o
 

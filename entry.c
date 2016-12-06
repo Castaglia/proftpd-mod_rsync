@@ -24,21 +24,27 @@
 
 #include "mod_rsync.h"
 #include "session.h"
+#include "names.h"
 #include "entry.h"
 #include "msg.h"
 
 /* Entries with names longer than this have a different wire format/flags. */
 #define RSYNC_LONG_NAME_LEN		255
 
-static const char *trace_channel = "rsync";
+static const char *trace_channel = "rsync.entry";
 
-struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
-    const char *path, int flags) {
+struct rsync_entry *rsync_entry_create(pool *p, const char *path, int flags) {
   int res;
   struct rsync_entry *ent;
   struct stat st;
   char *best_path;
   size_t best_pathlen;
+
+  if (p == NULL ||
+      path == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
  
   best_path = dir_best_path(p, path);
   if (best_path == NULL) {
@@ -99,21 +105,219 @@ struct rsync_entry *rsync_entry_create(pool *p, struct rsync_session *sess,
   return ent;
 }
 
+/* Notes: see rsync-${version}/flist.c#send_file_entry()
+ *
+ * That rsync function makes tremendous use of static variables; these are
+ * static so that they can be used as the "previous" values.
+ */
+
+static int get_codec_flags(pool *p, struct rsync_entry *ent,
+    struct rsync_session *sess) {
+  static time_t mtime;
+  static mode_t mode;
+#ifdef RSYNC_USE_HARD_LINKS
+  static int64_t dev;
+#endif /* RSYNC_USE_HARD_LINKS */
+  static dev_t rdev;
+  static uint32_t rdev_major;
+  static uid_t uid;
+  static gid_t gid;
+  static const char *user_name, *group_name;
+  static char prev_name[PR_TUNABLE_PATH_MAX+1];
+
+  int codec_flags = 0;
+
+  if (S_ISREG(ent->mode)) {
+    codec_flags = 0;
+
+  } else if (S_ISDIR(ent->mode)) {
+    if (sess->protocol_version >= 30)
+      if (ent->flags & RSYNC_ENTRY_DATA_FL_CONTENT_DIR) {
+        codec_flags = ent->flags & RSYNC_ENTRY_DATA_FL_TOP_DIR;
+
+      } else if (ent->flags & RSYNC_ENTRY_DATA_FL_IMPLIED_DIR) {
+        codec_flags = RSYNC_ENTRY_CODEC_FL_TOP_DIR|RSYNC_ENTRY_CODEC_FL_NO_CONTENT_DIR;
+
+      } else {
+        codec_flags = RSYNC_ENTRY_CODEC_FL_NO_CONTENT_DIR;
+      }
+
+    } else {
+      codec_flags = ent->flags & RSYNC_ENTRY_DATA_FL_TOP_DIR;
+    }
+
+  } else {
+    codec_flags = 0;
+  }
+
+  if (ent->mode == mode) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_MODE;
+
+  } else {
+    mode = ent->mode;
+  }
+
+  if (sess->opts->preserve_devices == TRUE &&
+      S_ISDEVICE(mode)) {
+  } else if (sess->opts->preserve_specials == TRUE &&
+             S_ISSPECIAL(mode) &&
+             sess->protocol_version < 31) {
+    /* XXX */
+
+  } else if (sess->protocol_version < 28) {
+    rdev = MAKEDEV(0, 0);
+  }
+
+  if (sess->opts->preserve_uid == FALSE ||
+      (ent->uid == uid && *prev_name)) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_UID;
+
+  } else {
+    uid = ent->uid;
+
+    if (sess->opts->numeric_ids == FALSE) {
+      user_name = rsync_names_add_uid(p, sess, uid);
+      if (sess->opts->allow_incr_recurse == TRUE &&
+          user_name != NULL) {
+        codec_flags |= RSYNC_ENTRY_CODEC_FL_USER_NAME_NEXT;
+      }
+    }
+  }
+
+  if (sess->opts->preserve_gid == FALSE ||
+      (ent->gid == gid && *prev_name)) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_GID;
+
+  } else {
+    gid = ent->gid;
+
+    if (sess->opts->numeric_ids == FALSE) {
+      group_name = rsync_names_add_gid(p, sess, gid);
+      if (sess->opts->allow_incr_recurse == TRUE &&
+          user_name != NULL) {
+        codec_flags |= RSYNC_ENTRY_CODEC_FL_GROUP_NAME_NEXT;
+      }
+    }
+  }
+
+  if (ent->mtime == mtime) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_TIME;
+
+  } else {
+    mtime = ent->mtime;
+  }
+
+/* XXX MOD_NSEC? */
+
+#ifdef RSYNC_USE_HARD_LINKS
+#endif /* RSYNC_USE_HARD_LINKS */
+
+  for (l = 0;
+       prev_name[l] && ... && (l < RSYNC_LONG_NAME_LEN);
+       l++) {
+  }
+
+  name_len = strlen(ent->name + l);
+
+  if (l > 0) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_NAME;
+  }
+
+  if (name_len > RSYNC_LONG_NAME_LEN) {
+    codec_flags |= RSYNC_ENTRY_CODEC_FL_LONG_NAME;
+  }
+
+  if (sess->protocol_version >= 28) {
+    if (codec_flags == 0 &&
+        !S_ISDIR(mode)) {
+      codec_flags |= RSYNC_ENTRY_CODEC_FL_TOP_DIR;
+    }
+
+    if ((codec_flags & 0xff00) ||
+        codec_flags == 0) {
+      codec_flags |= RSYNC_ENTRY_CODEC_FL_EXTENDED_FLAGS;
+    }
+
+  } else {
+    if (!(codec_flags & 0xff)) {
+      codec_flags |= S_ISDIR(mode) ?
+        RSYNC_ENTRY_CODEC_FL_LONG_NAME :
+        RSYNC_ENTRY_CODEC_FL_TOP_DIR;
+    }
+  }
+
+  return codec_flags;
+}
+
 int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
-    struct rsync_entry *ent, unsigned int protocol_version) {
+    struct rsync_entry *ent, struct rsync_session *sess) {
   uint32_t len = 0;
+  int codec_flags = 0;
+
+  if (p == NULL ||
+      buf == NULL ||
+      buflen == NULL ||
+      ent == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  codec_flags = get_codec_flags(p, ent, sess);
+
+  if (sess->protocol_version >= 28) {
+    if (codec_flags & RSYNC_ENTRY_CODEC_FL_EXTENDED_FLAGS) {
+      len += rsync_msg_write_short(buf, buflen, codec_flags);
+
+    } else {
+      len += rsync_msg_write_byte(buf, buflen, codec_flags);
+    }
+
+  } else {
+  }
 
   len += rsync_msg_write_byte(buf, buflen, ent->flags);
 
-  if (ent->flags & RSYNC_ENTRY_CODEC_FL_SAME_NAME) {
+  if (codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_NAME) {
     len += rsync_msg_write_byte(buf, buflen, 0);
   }
 
-  if (ent->flags & RSYNC_ENTRY_CODEC_FL_LONG_NAME) {
+  if (codec_flags & RSYNC_ENTRY_CODEC_FL_LONG_NAME) {
     /* XXX rsync_msg_write_varint */
   } else {
     len += rsync_msg_write_byte(buf, buflen, (char) ent->filesz);
   }
+
+  /* XXX: write_buf(f, fname + l1, l2); */
+
+#ifdef RSYNC_USE_HARD_LINKS
+#endif /* RSYNC_USE_HARD_LINKS */
+
+  /* XXX: write_varlong30(f, F_LENGTH(file), 3); */
+
+  if (!(codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_TIME)) {
+    if (sess->protocol_version >= 30) {
+      /* XXX rsync_msg_write_varlong */
+    } else {
+      len += rsync_msg_write_int(buf, buflen, ent->mtime);
+    }
+  }
+
+/* XXX XMIT_MOD_NSEC? */
+
+  if (!(codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_MODE)) {
+  }
+
+#if 0
+  if (sess->opts->preserve_uid == TRUE &&
+      !(codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_UID)) {
+  }
+
+  if (sess->opts->preserve_gid == TRUE &&
+      !(ent->flags & RSYNC_ENTRY_CODEC_FL_SAME_GID)) {
+  }
+#endif
+
+/* XXX Have arg for passing len back to caller? */
 
   errno = ENOSYS;
   return -1;
