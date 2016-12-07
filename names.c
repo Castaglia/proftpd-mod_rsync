@@ -50,6 +50,7 @@ const char *rsync_names_add_uid(pool *p, struct rsync_session *sess,
 
   name = pr_auth_uid2name(p, uid);
 
+/* XXX Add name/ID to linked list, stored in session, for sending. */
   errno = ENOSYS;
   return NULL;
 }

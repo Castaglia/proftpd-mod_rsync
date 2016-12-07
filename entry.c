@@ -131,7 +131,7 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
     codec_flags = 0;
 
   } else if (S_ISDIR(ent->mode)) {
-    if (sess->protocol_version >= 30)
+    if (sess->protocol_version >= 30) {
       if (ent->flags & RSYNC_ENTRY_DATA_FL_CONTENT_DIR) {
         codec_flags = ent->flags & RSYNC_ENTRY_DATA_FL_TOP_DIR;
 
