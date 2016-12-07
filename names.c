@@ -165,7 +165,8 @@ uint32_t rsync_names_encode(pool *p, unsigned char **buf, uint32_t *buflen,
       }
 
       len += rsync_msg_write_byte(buf, buflen, nid->name_len);
-      len += rsync_msg_write_data(buf, buflen, nid->name, nid->name_len);
+      len += rsync_msg_write_data(buf, buflen,
+        (const unsigned char *) nid->name, nid->name_len);
     }
 
     /* Note that we terminate the UID list with a zero UID.  We explicitly
@@ -196,7 +197,8 @@ uint32_t rsync_names_encode(pool *p, unsigned char **buf, uint32_t *buflen,
       }
 
       len += rsync_msg_write_byte(buf, buflen, nid->name_len);
-      len += rsync_msg_write_data(buf, buflen, nid->name, nid->name_len);
+      len += rsync_msg_write_data(buf, buflen,
+        (const unsigned char *) nid->name, nid->name_len);
     }
 
     /* Note that we terminate the GID list with a zero GID.  We explicitly
