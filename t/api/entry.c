@@ -31,14 +31,18 @@ static pool *p = NULL;
 
 static void set_up(void) {
   if (p == NULL) {
-    p = make_sub_pool(NULL);
+    p = permanent_pool = make_sub_pool(NULL);
   }
+
+  init_fs();
+  pr_fs_statcache_set_policy(PR_TUNABLE_FS_STATCACHE_SIZE,
+    PR_TUNABLE_FS_STATCACHE_MAX_AGE, 0);
 }
 
 static void tear_down(void) {
   if (p) {
     destroy_pool(p);
-    p = NULL;
+    p = permanent_pool = NULL;
   }
 }
 
@@ -82,7 +86,41 @@ START_TEST (entry_create_test) {
 END_TEST
 
 START_TEST (entry_codec_test) {
-  /* encode, decode */
+  int res;
+  struct rsync_entry *ent;
+  unsigned char *buf, *ptr;
+  uint32_t bufsz, buflen;
+
+  bufsz = buflen = 1024;
+  ptr = buf = palloc(p, bufsz);
+
+  /* encode */
+
+  mark_point();
+  res = rsync_entry_encode(NULL, NULL, NULL, NULL, 0);
+  fail_unless(res < 0, "Failed to handle null pool");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  mark_point();
+  res = rsync_entry_encode(p, NULL, NULL, NULL, 0);
+  fail_unless(res < 0, "Failed to handle null buf");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  mark_point();
+  res = rsync_entry_encode(p, &buf, NULL, NULL, 0);
+  fail_unless(res < 0, "Failed to handle null buflen");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  mark_point();
+  res = rsync_entry_encode(p, &buf, &buflen, NULL, 0);
+  fail_unless(res < 0, "Failed to handle null entry");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  /* decode? */
 }
 END_TEST
 
