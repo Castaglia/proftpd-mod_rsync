@@ -69,6 +69,7 @@ END_TEST
 
 START_TEST (names_add_uid_test) {
   const char *res;
+  uid_t uid;
 
   mark_point();
   res = rsync_names_add_uid(NULL, 0);
@@ -76,14 +77,67 @@ START_TEST (names_add_uid_test) {
   fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
-/* XXX add ID without alloc first -- EPERM */
-/* XXX add duplicate ID -- EEXIST */
+  uid = PR_ROOT_UID;
+
+  mark_point();
+  res = rsync_names_add_uid(NULL, uid);
+  fail_unless(res == NULL, "Failed to handle root uid");
+  fail_unless(errno == EPERM, "Expected EPERM (%d), got %s (%d)", EPERM,
+    strerror(errno), errno);
+
+  (void) rsync_names_alloc(p);
+
+  uid = 1;
+
+  mark_point();
+  res = rsync_names_add_uid(NULL, uid);
+  fail_unless(res != NULL, "Failed to handle UID %lu: %s", (unsigned long) uid,
+    strerror(errno));
+
+  mark_point();
+  res = rsync_names_add_uid(NULL, uid);
+  fail_unless(res == NULL, "Failed to handle duplicate uid");
+  fail_unless(errno == EEXIST, "Expected EEXIST (%d), got %s (%d)", EEXIST,
+    strerror(errno), errno);
+
+  (void) rsync_names_destroy();
 }
 END_TEST
 
 START_TEST (names_add_gid_test) {
-/* XXX add ID without alloc first -- EPERM */
-/* XXX add duplicate ID -- EEXIST */
+  const char *res;
+  gid_t gid;
+
+  mark_point();
+  res = rsync_names_add_gid(NULL, 0);
+  fail_unless(res == NULL, "Failed to handle null pool");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  gid = 0;
+
+  mark_point();
+  res = rsync_names_add_gid(NULL, gid);
+  fail_unless(res == NULL, "Failed to handle root gid");
+  fail_unless(errno == EPERM, "Expected EPERM (%d), got %s (%d)", EPERM,
+    strerror(errno), errno);
+
+  (void) rsync_names_alloc(p);
+
+  gid = 1;
+
+  mark_point();
+  res = rsync_names_add_gid(NULL, gid);
+  fail_unless(res != NULL, "Failed to handle GID %lu: %s", (unsigned long) gid,
+    strerror(errno));
+
+  mark_point();
+  res = rsync_names_add_gid(NULL, gid);
+  fail_unless(res == NULL, "Failed to handle duplicate gid");
+  fail_unless(errno == EEXIST, "Expected EEXIST (%d), got %s (%d)", EEXIST,
+    strerror(errno), errno);
+
+  (void) rsync_names_destroy();
 }
 END_TEST
 
