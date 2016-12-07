@@ -210,7 +210,7 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
     if (opts->numeric_ids == FALSE) {
       group_name = rsync_names_add_gid(p, sess, gid);
       if (opts->allow_incr_recurse == TRUE &&
-          user_name != NULL) {
+          group_name != NULL) {
         codec_flags |= RSYNC_ENTRY_CODEC_FL_GROUP_NAME_NEXT;
       }
     }
@@ -282,7 +282,7 @@ int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
     return -1;
   }
 
-  opts = sess-options;
+  opts = sess->options;
   codec_flags = get_codec_flags(p, ent, sess);
 
   if (sess->protocol_version >= 28) {
