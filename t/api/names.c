@@ -80,7 +80,7 @@ START_TEST (names_add_uid_test) {
   uid = PR_ROOT_UID;
 
   mark_point();
-  res = rsync_names_add_uid(NULL, uid);
+  res = rsync_names_add_uid(p, uid);
   fail_unless(res == NULL, "Failed to handle root uid");
   fail_unless(errno == EPERM, "Expected EPERM (%d), got %s (%d)", EPERM,
     strerror(errno), errno);
@@ -90,12 +90,12 @@ START_TEST (names_add_uid_test) {
   uid = 1;
 
   mark_point();
-  res = rsync_names_add_uid(NULL, uid);
+  res = rsync_names_add_uid(p, uid);
   fail_unless(res != NULL, "Failed to handle UID %lu: %s", (unsigned long) uid,
     strerror(errno));
 
   mark_point();
-  res = rsync_names_add_uid(NULL, uid);
+  res = rsync_names_add_uid(p, uid);
   fail_unless(res == NULL, "Failed to handle duplicate uid");
   fail_unless(errno == EEXIST, "Expected EEXIST (%d), got %s (%d)", EEXIST,
     strerror(errno), errno);
@@ -117,7 +117,7 @@ START_TEST (names_add_gid_test) {
   gid = 0;
 
   mark_point();
-  res = rsync_names_add_gid(NULL, gid);
+  res = rsync_names_add_gid(p, gid);
   fail_unless(res == NULL, "Failed to handle root gid");
   fail_unless(errno == EPERM, "Expected EPERM (%d), got %s (%d)", EPERM,
     strerror(errno), errno);
@@ -127,12 +127,12 @@ START_TEST (names_add_gid_test) {
   gid = 1;
 
   mark_point();
-  res = rsync_names_add_gid(NULL, gid);
+  res = rsync_names_add_gid(p, gid);
   fail_unless(res != NULL, "Failed to handle GID %lu: %s", (unsigned long) gid,
     strerror(errno));
 
   mark_point();
-  res = rsync_names_add_gid(NULL, gid);
+  res = rsync_names_add_gid(p, gid);
   fail_unless(res == NULL, "Failed to handle duplicate gid");
   fail_unless(errno == EEXIST, "Expected EEXIST (%d), got %s (%d)", EEXIST,
     strerror(errno), errno);
