@@ -45,7 +45,7 @@ static const char *trace_channel = "rsync.names";
  * the prototypes are declared in proto.h.
  */
 
-static void add_nid(struct name_ids **head, id_t id, const char *name) {
+static void add_nid(struct name_id **head, id_t id, const char *name) {
   struct name_id *nid;
 
   nid = pcalloc(names_pool, sizeof(struct name_id));
