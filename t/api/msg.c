@@ -172,7 +172,7 @@ START_TEST (msg_read_write_short_test) {
 
   mark_point();
   n = rsync_msg_read_short(p, &buf, &buflen);
-  expected = 1633771873;
+  expected = 24929;
   fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
   fail_unless(buflen == bufsz-2, "Expected %lu, got %lu",
     (unsigned long) (bufsz-2), (unsigned long) buflen);
@@ -330,6 +330,98 @@ START_TEST (msg_read_write_int_test) {
 }
 END_TEST
 
+START_TEST (msg_read_write_varint_test) {
+  int32_t n, expected;
+  unsigned char *buf, *ptr;
+  uint32_t buflen, bufsz, len;
+
+  bufsz = buflen = 1024;
+  ptr = buf = palloc(p, bufsz);
+  memset(ptr, 'a', bufsz);
+
+  /* Basic read_varint tests. */
+  mark_point();
+  n = rsync_msg_read_varint(NULL, NULL, NULL);
+  fail_unless(n == 0, "Failed to handle null buf");
+
+  mark_point();
+  n = rsync_msg_read_varint(p, &buf, NULL);
+  fail_unless(n == 0, "Failed to handle null buflen");
+
+  buflen = 0;
+  mark_point();
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  fail_unless(n == 0, "Failed to handle zero buflen");
+  buflen = bufsz;
+
+  mark_point();
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = 97;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+  fail_unless(buflen == bufsz-1, "Expected %lu, got %lu",
+    (unsigned long) (bufsz-1), (unsigned long) buflen);
+
+  /* Basic write_varint tests. */
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  len = rsync_msg_write_varint(NULL, NULL, 32);
+  fail_unless(len == 0, "Failed to handle null buf");
+
+  mark_point();
+  len = rsync_msg_write_varint(&buf, NULL, 32);
+  fail_unless(len == 0, "Failed to handle null buflen");
+
+  mark_point();
+  buflen = 0;
+  len = rsync_msg_write_varint(&buf, &buflen, 32);
+  fail_unless(len == 0, "Failed to handle short buflen");
+  buflen = bufsz;
+
+  mark_point();
+  len = rsync_msg_write_varint(&buf, &buflen, 32);
+  fail_unless(len == 1, "Expected 4, got %lu", (unsigned long) len);
+  fail_unless(buflen == bufsz-1, "Expected %lu, got %lu",
+    (unsigned long) (bufsz-1), (unsigned long) buflen);
+
+  /* Read what I wrote tests. */
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  rsync_msg_write_varint(&buf, &buflen, 24);
+  rsync_msg_write_varint(&buf, &buflen, 76);
+  rsync_msg_write_varint(&buf, &buflen, 1);
+  rsync_msg_write_varint(&buf, &buflen, -42);
+  rsync_msg_write_varint(&buf, &buflen, 48);
+
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = 24;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = 76;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = 1;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = -42;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+
+  n = rsync_msg_read_varint(p, &buf, &buflen);
+  expected = 48;
+  fail_unless(n == expected, "Expected %d, got %d", (int) expected, (int) n);
+}
+END_TEST
+
 START_TEST (msg_read_write_long_test) {
   int64_t l, expected;
   unsigned char *buf, *ptr;
@@ -422,6 +514,104 @@ START_TEST (msg_read_write_long_test) {
     (long) l);
 
   l = rsync_msg_read_long(p, &buf, &buflen);
+  expected = 48;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+}
+END_TEST
+
+START_TEST (msg_read_write_varlong_test) {
+  int64_t l, expected;
+  unsigned char *buf, *ptr;
+  uint32_t buflen, bufsz, len;
+
+  bufsz = buflen = 1024;
+  ptr = buf = palloc(p, bufsz);
+  memset(ptr, 'a', bufsz);
+
+  /* Basic read_varlong tests. */
+  mark_point();
+  l = rsync_msg_read_varlong(NULL, NULL, NULL, 2);
+  fail_unless(l == 0, "Failed to handle null buf");
+
+  mark_point();
+  l = rsync_msg_read_varlong(p, &buf, NULL, 2);
+  fail_unless(l == 0, "Failed to handle null buflen");
+
+  buflen = 0;
+  mark_point();
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 2);
+  fail_unless(l == 0, "Failed to handle zero buflen");
+  buflen = bufsz;
+
+  mark_point();
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 8);
+  expected = 7016996765293437281;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+  fail_unless(buflen == bufsz-8, "Expected %lu, got %lu",
+    (unsigned long) (bufsz-8), (unsigned long) buflen);
+
+  /* Basic write_varlong tests. */
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  len = rsync_msg_write_varlong(NULL, NULL, 32, 1);
+  fail_unless(len == 0, "Failed to handle null buf");
+
+  mark_point();
+  len = rsync_msg_write_varlong(&buf, NULL, 32, 1);
+  fail_unless(len == 0, "Failed to handle null buflen");
+
+  mark_point();
+  buflen = 4;
+  len = rsync_msg_write_varlong(&buf, &buflen, 32, 8);
+  fail_unless(len == 0, "Failed to handle short buflen");
+  buflen = bufsz;
+
+  mark_point();
+  len = rsync_msg_write_varlong(&buf, &buflen, 32, 1);
+  fail_unless(len == 1, "Expected 1, got %lu", (unsigned long) len);
+  fail_unless(buflen == bufsz-1, "Expected %lu, got %lu",
+    (unsigned long) (bufsz-1), (unsigned long) buflen);
+
+  /* Read what I wrote tests. */
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  rsync_msg_write_varlong(&buf, &buflen, 24, 1);
+  rsync_msg_write_varlong(&buf, &buflen, 76, 2);
+  rsync_msg_write_varlong(&buf, &buflen, 1, 3);
+  rsync_msg_write_varlong(&buf, &buflen, -42, 4);
+  rsync_msg_write_varlong(&buf, &buflen, 48, 5);
+
+  buf = ptr;
+  buflen = bufsz;
+
+  mark_point();
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 1);
+  expected = 24;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 2);
+  expected = 76;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 3);
+  expected = 1;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 4);
+  expected = -42;
+  fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
+    (long) l);
+
+  l = rsync_msg_read_varlong(p, &buf, &buflen, 5);
   expected = 48;
   fail_unless(l == expected, "Expected %ld, got %ld", (long) expected,
     (long) l);
@@ -631,7 +821,9 @@ Suite *tests_get_msg_suite(void) {
   tcase_add_test(testcase, msg_read_write_byte_test);
   tcase_add_test(testcase, msg_read_write_short_test);
   tcase_add_test(testcase, msg_read_write_int_test);
+  tcase_add_test(testcase, msg_read_write_varint_test);
   tcase_add_test(testcase, msg_read_write_long_test);
+  tcase_add_test(testcase, msg_read_write_varlong_test);
   tcase_add_test(testcase, msg_read_write_data_test);
   tcase_add_test(testcase, msg_read_write_string_test);
 

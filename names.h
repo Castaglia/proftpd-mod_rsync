@@ -28,6 +28,9 @@
 #include "mod_rsync.h"
 #include "session.h"
 
+int rsync_names_alloc(pool *p);
+int rsync_names_destroy(void);
+
 const char *rsync_names_add_uid(pool *p, struct rsync_session *sess, uid_t uid);
 const char *rsync_names_add_gid(pool *p, struct rsync_session *sess, gid_t gid);
 

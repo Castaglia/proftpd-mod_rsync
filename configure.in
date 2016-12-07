@@ -33,6 +33,9 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 AC_CHECK_HEADERS(stdlib.h unistd.h limits.h fcntl.h endian.h machine/endian.h)
 
+AC_CHECK_SIZEOF(int32_t, 0)
+AC_CHECK_SIZEOF(int64_t, 0)
+
 dnl Need to support/handle the --enable-devel option, to see if coverage
 dnl is being used
 AC_ARG_ENABLE(devel,

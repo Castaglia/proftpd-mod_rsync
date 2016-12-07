@@ -51,6 +51,12 @@
 /* Define if you have the <machine/endian.h> header file.  */
 #undef HAVE_MACHINE_ENDIAN_H
 
+/* The number of bytes in an int32.  */
+#undef SIZEOF_INT32_T
+
+/* The number of bytes in an int64.  */
+#undef SIZEOF_INT64_T
+
 /* Miscellaneous */
 extern int rsync_logfd;
 extern module rsync_module;

@@ -36,11 +36,36 @@ static void set_up(void) {
 }
 
 static void tear_down(void) {
+  rsync_names_destroy();
+
   if (p) {
     destroy_pool(p);
     p = NULL;
   }
 }
+
+START_TEST (names_alloc_test) {
+  int res;
+
+  mark_point();
+  res = rsync_names_destroy();
+  fail_unless(res == 0, "Failed to destroy names: %s", strerror(errno));
+
+  mark_point();
+  res = rsync_names_alloc(NULL);
+  fail_unless(res < 0, "Failed to handle null pool");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  mark_point();
+  res = rsync_names_alloc(p);
+  fail_unless(res == 0, "Failed to allocate names: %s", strerror(errno));
+
+  mark_point();
+  res = rsync_names_destroy();
+  fail_unless(res == 0, "Failed to destroy names: %s", strerror(errno));
+}
+END_TEST
 
 START_TEST (names_add_uid_test) {
   const char *res;
@@ -56,10 +81,15 @@ START_TEST (names_add_uid_test) {
   fail_unless(res == NULL, "Failed to handle null sess");
   fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
+
+/* XXX add ID without alloc first -- EPERM */
+/* XXX add duplicate ID -- EEXIST */
 }
 END_TEST
 
 START_TEST (names_add_gid_test) {
+/* XXX add ID without alloc first -- EPERM */
+/* XXX add duplicate ID -- EEXIST */
 }
 END_TEST
 
@@ -76,6 +106,7 @@ Suite *tests_get_names_suite(void) {
 
   tcase_add_checked_fixture(testcase, set_up, tear_down);
 
+  tcase_add_test(testcase, names_alloc_test);
   tcase_add_test(testcase, names_add_uid_test);
   tcase_add_test(testcase, names_add_gid_test);
   tcase_add_test(testcase, names_encode_test);

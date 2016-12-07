@@ -30,7 +30,10 @@
 char rsync_msg_read_byte(pool *p, unsigned char **buf, uint32_t *buflen);
 int16_t rsync_msg_read_short(pool *p, unsigned char **buf, uint32_t *buflen);
 int32_t rsync_msg_read_int(pool *p, unsigned char **buf, uint32_t *buflen);
+int32_t rsync_msg_read_varint(pool *p, unsigned char **buf, uint32_t *buflen);
 int64_t rsync_msg_read_long(pool *p, unsigned char **buf, uint32_t *buflen);
+int64_t rsync_msg_read_varlong(pool *p, unsigned char **buf, uint32_t *buflen,
+  unsigned char min);
 unsigned char *rsync_msg_read_data(pool *p, unsigned char **buf,
   uint32_t *buflen, size_t datalen);
 char *rsync_msg_read_string(pool *p, unsigned char **buf, uint32_t *buflen,
@@ -41,8 +44,12 @@ uint32_t rsync_msg_write_short(unsigned char **buf, uint32_t *buflen,
   int16_t val);
 uint32_t rsync_msg_write_int(unsigned char **buf, uint32_t *buflen,
   int32_t val);
+uint32_t rsync_msg_write_varint(unsigned char **buf, uint32_t *buflen,
+  int32_t val);
 uint32_t rsync_msg_write_long(unsigned char **buf, uint32_t *buflen,
   int64_t val);
+uint32_t rsync_msg_write_varlong(unsigned char **buf, uint32_t *buflen,
+  int64_t val, unsigned char min);
 uint32_t rsync_msg_write_data(unsigned char **buf, uint32_t *buflen,
   const unsigned char *data, size_t datalen);
 uint32_t rsync_msg_write_string(unsigned char **buf, uint32_t *buflen,
