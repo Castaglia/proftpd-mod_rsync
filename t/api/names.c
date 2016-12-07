@@ -71,13 +71,13 @@ START_TEST (names_add_uid_test) {
   const char *res;
 
   mark_point();
-  res = rsync_names_add_uid(NULL, NULL, 0);
+  res = rsync_names_add_uid(NULL, 0);
   fail_unless(res == NULL, "Failed to handle null pool");
   fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   mark_point();
-  res = rsync_names_add_uid(p, NULL, 0);
+  res = rsync_names_add_uid(p, 0);
   fail_unless(res == NULL, "Failed to handle null sess");
   fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);

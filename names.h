@@ -26,6 +26,7 @@
 #define MOD_RSYNC_NAMES_H
 
 #include "mod_rsync.h"
+#include "session.h"
 
 int rsync_names_alloc(pool *p);
 int rsync_names_destroy(void);
