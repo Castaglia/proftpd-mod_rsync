@@ -24,6 +24,7 @@
 
 #include "mod_rsync.h"
 #include "session.h"
+#include "options.h"
 #include "names.h"
 #include "entry.h"
 #include "msg.h"
@@ -133,8 +134,11 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
   static const char *user_name, *group_name;
   static char prev_name[PR_TUNABLE_PATH_MAX+1];
 
+  struct rsync_options *opts;
   int codec_flags = 0, len = 0;
   size_t name_len;
+
+  opts = sess->options;
 
   if (S_ISREG(ent->mode)) {
     codec_flags = 0;
@@ -166,9 +170,9 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
     mode = ent->mode;
   }
 
-  if (sess->options->preserve_devices == TRUE &&
+  if (opts->preserve_devices == TRUE &&
       S_ISDEVICE(mode)) {
-  } else if (sess->options->preserve_specials == TRUE &&
+  } else if (opts->preserve_specials == TRUE &&
              S_ISSPECIAL(mode) &&
              sess->protocol_version < 31) {
     /* XXX */
@@ -180,32 +184,32 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
 #endif
   }
 
-  if (sess->options->preserve_uid == FALSE ||
+  if (opts->preserve_uid == FALSE ||
       (ent->uid == uid && *prev_name)) {
     codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_UID;
 
   } else {
     uid = ent->uid;
 
-    if (sess->options->numeric_ids == FALSE) {
+    if (opts->numeric_ids == FALSE) {
       user_name = rsync_names_add_uid(p, sess, uid);
-      if (sess->options->allow_incr_recurse == TRUE &&
+      if (opts->allow_incr_recurse == TRUE &&
           user_name != NULL) {
         codec_flags |= RSYNC_ENTRY_CODEC_FL_USER_NAME_NEXT;
       }
     }
   }
 
-  if (sess->options->preserve_gid == FALSE ||
+  if (opts->preserve_gid == FALSE ||
       (ent->gid == gid && *prev_name)) {
     codec_flags |= RSYNC_ENTRY_CODEC_FL_SAME_GID;
 
   } else {
     gid = ent->gid;
 
-    if (sess->options->numeric_ids == FALSE) {
+    if (opts->numeric_ids == FALSE) {
       group_name = rsync_names_add_gid(p, sess, gid);
-      if (sess->options->allow_incr_recurse == TRUE &&
+      if (opts->allow_incr_recurse == TRUE &&
           user_name != NULL) {
         codec_flags |= RSYNC_ENTRY_CODEC_FL_GROUP_NAME_NEXT;
       }
@@ -265,17 +269,20 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
 
 int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
     struct rsync_entry *ent, struct rsync_session *sess) {
+  struct rsync_options *opts;
   uint32_t len = 0;
   int codec_flags = 0;
 
   if (p == NULL ||
       buf == NULL ||
       buflen == NULL ||
-      ent == NULL) {
+      ent == NULL ||
+      sess == NULL) {
     errno = EINVAL;
     return -1;
   }
 
+  opts = sess-options;
   codec_flags = get_codec_flags(p, ent, sess);
 
   if (sess->protocol_version >= 28) {
@@ -322,11 +329,11 @@ int rsync_entry_encode(pool *p, unsigned char **buf, uint32_t *buflen,
   }
 
 #if 0
-  if (sess->options->preserve_uid == TRUE &&
+  if (opts->preserve_uid == TRUE &&
       !(codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_UID)) {
   }
 
-  if (sess->options->preserve_gid == TRUE &&
+  if (opts->preserve_gid == TRUE &&
       !(codec_flags & RSYNC_ENTRY_CODEC_FL_SAME_GID)) {
   }
 #endif
