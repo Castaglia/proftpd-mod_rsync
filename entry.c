@@ -192,7 +192,7 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
     uid = ent->uid;
 
     if (opts->numeric_ids == FALSE) {
-      user_name = rsync_names_add_uid(p, sess, uid);
+      user_name = rsync_names_add_uid(p, uid);
       if (opts->allow_incr_recurse == TRUE &&
           user_name != NULL) {
         codec_flags |= RSYNC_ENTRY_CODEC_FL_USER_NAME_NEXT;
@@ -208,7 +208,7 @@ static int get_codec_flags(pool *p, struct rsync_entry *ent,
     gid = ent->gid;
 
     if (opts->numeric_ids == FALSE) {
-      group_name = rsync_names_add_gid(p, sess, gid);
+      group_name = rsync_names_add_gid(p, gid);
       if (opts->allow_incr_recurse == TRUE &&
           group_name != NULL) {
         codec_flags |= RSYNC_ENTRY_CODEC_FL_GROUP_NAME_NEXT;
