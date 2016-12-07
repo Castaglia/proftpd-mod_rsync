@@ -31,4 +31,7 @@
 const char *rsync_names_add_uid(pool *p, struct rsync_session *sess, uid_t uid);
 const char *rsync_names_add_gid(pool *p, struct rsync_session *sess, gid_t gid);
 
+int rsync_names_encode(pool *p, unsigned char **buf, uint32_t *buflen,
+  struct rsync_session *sess);
+
 #endif /* MOD_RSYNC_NAMES_H */

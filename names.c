@@ -67,3 +67,9 @@ const char *rsync_names_add_gid(pool *p, struct rsync_session *sess,
   errno = ENOSYS;
   return NULL;
 }
+
+int rsync_names_encode(pool *p, unsigned char **buf, uint32_t *buflen,
+    struct rsync_session *sess) {
+  errno = ENOSYS;
+  return -1;
+}

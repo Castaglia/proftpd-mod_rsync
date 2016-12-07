@@ -63,6 +63,10 @@ START_TEST (names_add_gid_test) {
 }
 END_TEST
 
+START_TEST (names_encode_test) {
+}
+END_TEST
+
 Suite *tests_get_names_suite(void) {
   Suite *suite;
   TCase *testcase;
@@ -74,6 +78,7 @@ Suite *tests_get_names_suite(void) {
 
   tcase_add_test(testcase, names_add_uid_test);
   tcase_add_test(testcase, names_add_gid_test);
+  tcase_add_test(testcase, names_encode_test);
 
   suite_add_tcase(suite, testcase);
   return suite;

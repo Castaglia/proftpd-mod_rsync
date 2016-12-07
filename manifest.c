@@ -86,7 +86,7 @@ int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
       continue;
     }
 
-    ent = rsync_entry_create(p, sess, names[i], flags);
+    ent = rsync_entry_create(p, names[i], flags);
     *((struct rsync_entry **) push_array(entries)) = ent;
   }
 
@@ -102,7 +102,7 @@ int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
     struct rsync_entry *ent;
 
     ent = ((struct rsync_entry **) entries->elts)[i];
-    if (rsync_entry_encode(p, &buf, &buflen, ent, sess->protocol_version) < 0) {
+    if (rsync_entry_encode(p, &buf, &buflen, ent, sess) < 0) {
       (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
         "error encoding file entry for '%.*s': %s", (int) ent->pathsz,
         ent->path, strerror(errno));
@@ -113,6 +113,10 @@ int rsync_manifest_handle_data(pool *p, struct rsync_session *sess,
   rsync_msg_write_int(&buf, &buflen, 0);
 
   /* XXX Send the id-to-name mapping list. */
+  if (rsync_names_encode(p, &buf, &buflen, sess) < 0) {
+    (void) pr_log_writefile(rsync_logfd, MOD_RSYNC_VERSION,
+      "error encoding names: %s", strerror(errno));
+  }
 
   if (sess->protocol_version < 30) {
     /* Send the error flag */
